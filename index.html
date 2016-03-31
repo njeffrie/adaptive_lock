@@ -35,7 +35,7 @@
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
 <p>Nat Jeffries (<a href="https://github.com/njeffrie" class="user-mention">@njeffrie</a>)
-Madhav Ieyngar (<a href="https://github.com/miyengar" class="user-mention">@m-iyengar</a>)</p>
+Madhav Iyengar (<a href="https://github.com/m-iyengar" class="user-mention">@m-iyengar</a>)</p>
 
 <h3>
 <a id="summary" class="anchor" href="#summary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary</h3>
@@ -60,23 +60,27 @@ Madhav Ieyngar (<a href="https://github.com/miyengar" class="user-mention">@m-iy
 <h3>
 <a id="deliverables" class="anchor" href="#deliverables" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Deliverables</h3>
 
-<p>-Accurate benchmarks for simple spinlocks, sleeping mutexes, MCS Spinlocks, Readers-Writers locks, and optimistic atomic transactions.
--Expose a simple locking API which encapsulates several locking mechanisms, and chooses between them based on the workload encountered.
--Demonstrate measurable speedup over traditional locking when faced by a changing workload</p>
+<ul>
+	<li>Accurate benchmarks for simple spinlocks, sleeping mutexes, MCS Spinlocks, Readers-Writers locks, and optimistic atomic transactions.</li>
+	<li>Expose a simple locking API which encapsulates several locking mechanisms, and chooses between them based on the workload encountered.</li>
+	<li>Demonstrate measurable speedup over traditional locking when faced by a changing workload</li><
+</ul>
 
 <h3>
 <a id="goals" class="anchor" href="#goals" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goals</h3>
 
-<p>-Intelligently choose which locks to use based on system architecture<br>
--Demonstrate comparable performance when compared to well-chosen locking on a static workload<br>
--Implement traditional benchmark algorithms with our locks and show performance relative to traditional locks</p>
-
+<ul>
+	<li>-Intelligently choose which locks to use based on system architecture</li>
+	<li>Demonstrate comparable performance when compared to well-chosen locking on a static workload</li>
+	<li>Implement traditional benchmark algorithms with our locks and show performance relative to traditional locks</li>
+</ul>
 <h3>
 <a id="expectations" class="anchor" href="#expectations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Expectations</h3>
 
-<p>-Present graphs of speedup over traditional locks
--Present at least one example workload program, and how to replace traditional locks with our library</p>
-
+<ul>
+	<li>Present graphs of speedup over traditional locks</li>
+	<li>Present at least one example workload program, and how to replace traditional locks with our library</li>
+</ul>
 <h3>
 <a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Platform Choice</h3>
 
