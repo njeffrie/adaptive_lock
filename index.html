@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Adaptive Lock : Usage sensitive locking for critical sections facing changing workloads">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Adaptive Lock</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/njeffrie/adaptive_lock">View on GitHub</a>
+
+          <h1 id="project_title">Adaptive Lock</h1>
+          <h2 id="project_tagline">Usage sensitive locking for critical sections facing changing workloads</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/njeffrie/adaptive_lock/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/njeffrie/adaptive_lock/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+
+<p>Nat Jeffries (<a href="https://github.com/njeffrie" class="user-mention">@njeffrie</a>)
+Madhav Ieyngar (<a href="https://github.com/miyengar" class="user-mention">@miyengar</a>)</p>
+
+<h3>
+<a id="summary" class="anchor" href="#summary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary</h3>
+
+<p>We are implementing a locking library which adapts the type of lock used internally as well as takes advantage of the transaction instructions available on Intel processors.</p>
+
+<h3>
+<a id="background" class="anchor" href="#background" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Background</h3>
+
+<p>Locks perform better on some workloads than on others, and it's often difficult to figure out which type of lock should be used when the workload is not well defined.  It becomes even more difficult when new locking constructs are available, such as Intel's new transaction instructions.  There is lots of research on locking and which locks perform best on which workloads, and we are planning to build on that information to implement a workload-sensitive lock which dynamically changes the type of lock used internally to protect each critical section in a piece of code. </p>
+
+<h3>
+<a id="the-challenge" class="anchor" href="#the-challenge" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Challenge</h3>
+
+<p>This is a challenging project for several reasons.  First, we will need to implement several existing locks and benchmark them with a variety of workloads.  We will then need to figure out exactly how to transition between types of locks without breaking any of the critical section invariants guaranteed to the programmer.  We also will be playing around with atomic transactions available on newer intel processors, and deal with the possibilities of transitioning between atomic transactions to protect our critical sections, and traditional locking. </p>
+
+<h3>
+<a id="resources" class="anchor" href="#resources" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Resources</h3>
+
+<p>We will be doing most of our testing on the Xeon Phi multiprocessor machines available in the latedays cluster.  If time permits we may experiment with additional machines or architectures.</p>
+
+<h3>
+<a id="deliverables" class="anchor" href="#deliverables" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Deliverables</h3>
+
+<p>-Accurate benchmarks for simple spinlocks, sleeping mutexes, MCS Spinlocks, Readers-Writers locks, and optimistic atomic transactions.
+-Expose a simple locking API which encapsulates several locking mechanisms, and chooses between them based on the workload encountered.
+-Demonstrate measurable speedup over traditional locking when faced by a changing workload</p>
+
+<h3>
+<a id="goals" class="anchor" href="#goals" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goals</h3>
+
+<p>-Intelligently choose which locks to use based on system architecture
+-Demonstrate comparable performance when compared to well-chosen locking on a static workload
+-Implement traditional benchmark algorithms with our locks and show performance relative to traditional locks</p>
+
+<h3>
+<a id="expectations" class="anchor" href="#expectations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Expectations</h3>
+
+<p>-Present graphs of speedup over traditional locks
+-Present at least one example workload program, and how to replace traditional locks with our library</p>
+
+<h3>
+<a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Platform Choice</h3>
+
+<p>We plan on developing for linux, specifically the Xeon Phi hardware platform available on latedays. We hope to extend our implementation to other architectures.</p>
+
+<h3>
+<a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Schedule</h3>
+
+<p>Week of 4/4 - Benchmark existing locks
+Week of 4/11 -  Implement versions of spinlocks, mutexes, MCS spinlocks, readers-writers locks, and atomic transaction based locks.  Demonstrate at least spinlocks, mutexes, and readers-writers locks for midpoint demo, as well as benchmarks gathered.
+Week of 4/18 - Combine locks under single API, develop logic to transition between them.
+Week of 4/25 - Complete implementation, begin tuning when to choose what lock based on benchmarks gathered at the beginning.
+Week of 5/2 - Finalize implementaiton, experiment changing architecture if time allows.  Finalize webpage before 5/7.
+5/9- Parallelism Competition</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Adaptive Lock maintained by <a href="https://github.com/njeffrie">njeffrie</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
