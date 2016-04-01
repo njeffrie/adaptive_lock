@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Adaptive Lock : Usage sensitive locking for critical sections facing changing workloads">
+    <meta name="description" content="Adaptive Lock : Workload-Sensitive Locks for Critical Sections Facing Variable Access Patterns">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/njeffrie/adaptive_lock">View on GitHub</a>
 
           <h1 id="project_title">Adaptive Lock</h1>
-          <h2 id="project_tagline">Usage sensitive locking for critical sections facing changing workloads</h2>
+          <h2 id="project_tagline">Workload-Sensitive Locks for Critical Sections Facing Variable Access Patterns</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/njeffrie/adaptive_lock/zipball/master">Download this project as a .zip file</a>
@@ -40,7 +40,7 @@ Madhav Iyengar (<a href="https://github.com/m-iyengar" class="user-mention">@m-i
 <h3>
 <a id="summary" class="anchor" href="#summary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary</h3>
 
-<p>We are implementing a locking library which adapts the type of lock used internally as well as takes advantage of the transaction instructions available on Intel processors.</p>
+<p>We are implementing a workload-sensitive lock library which adapts to changing access patterns using several different mechanisms, including the recent x86 transaction instructions, while presenting a single, simple interface to the user.</p>
 
 <h3>
 <a id="background" class="anchor" href="#background" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Background</h3>
