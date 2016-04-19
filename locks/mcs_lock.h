@@ -31,7 +31,7 @@ static inline void mcs_unlock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 		// check if we are the final locker, change state to unlocked
 		mcs_lock_t last = qnode;
 		if (__atomic_compare_exchange_n(lock, &last, NULL, false, 
-				__ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)
+				__ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
 			return;
 
 		// synchronize with next thread

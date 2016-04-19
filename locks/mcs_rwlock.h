@@ -107,7 +107,7 @@ static inline void mcs_wlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 		// otherwise, this is the next writer, wait for all readers to leave
 		lock->next_wr = qnode;
 		if (!lock->num_read && (__atomic_exchange_n(&lock->next_wr, NULL, 
-				__ATOMIC_ACQ_REL) == qnode)
+				__ATOMIC_ACQ_REL) == qnode))
 			qnode->state->spinning = 0;
 	}
 

@@ -33,7 +33,7 @@ static inline void ticket_wlock(ticket_rwlock_t *lock) {
 		WCNT_INC, __ATOMIC_ACQ_REL);
 
 	// spin until the request completion matches ticket
-	while (prev_writers != lock->completions);
+	while (prev_threads != lock->completions);
 }
 
 static inline void ticket_wunlock(ticket_rwlock_t *lock) {
