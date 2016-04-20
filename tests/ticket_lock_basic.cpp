@@ -12,6 +12,11 @@
 #include <assert.h>
 #include <time.h>
 #include "CycleTimer.h"
+#include <omp.h>
+
+#define LOOPS 10000
+#define DELAY_LOOP 1000
+#define THREADS 256
 
 using namespace std;
 
@@ -23,29 +28,42 @@ pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 mcs_lock_t mcs = INIT_MCS_LOCK;
 
 void *test_func_mutex(void *arg){
-	for (int i=0; i<1600; i++){
+	for (int i=0; i<LOOPS; i++){
 		pthread_mutex_lock(&m);
 		int var = testvar1;
 		int temp = 0;
-		for (int i=0; i<1000; i++){
+		for (int j=0; j<DELAY_LOOP; j++){
 			temp++;
 		}
-		if (!(i % 100)) { printf("."); fflush(stdout);}
 		testvar1 = var + 1;
 		pthread_mutex_unlock(&m);
 	}
 	return arg;
 }
 
+void *test_func_critical(void *arg){
+	for (int i=0; i<LOOPS; i++){
+		#pragma omp critical 
+		{
+			int var = testvar1;
+			int temp = 0;
+			for (int j=0; j<DELAY_LOOP; j++){
+				temp++;
+			}
+			testvar1 = var + 1;
+		}
+	}
+	return arg;
+}
+
 void *test_func_ticketlock(void *arg){
-	for (int i=0; i<1600; i++){
+	for (int i=0; i<LOOPS; i++){
 		ticket_lock(&l);
 		int var = testvar1;
 		int temp = 0;
-		for (int i=0; i<1000; i++){
+		for (int j=0; j<DELAY_LOOP; j++){
 			temp++;
 		}
-		if (!(i % 100)) { printf("."); fflush(stdout);}
 		testvar1 = var + 1;
 		ticket_unlock(&l);
 	}
@@ -53,15 +71,14 @@ void *test_func_ticketlock(void *arg){
 }
 
 void *test_func_mcslock(void *arg){
-	for (int i=0; i<1600; i++){
+	for (int i=0; i<LOOPS; i++){
 		lock_qnode_t node;
 		mcs_lock(&mcs, &node);
 		int var = testvar1;
 		int temp = 0;
-		for (int i=0; i<1000; i++){
+		for (int j=0; j<DELAY_LOOP; j++){
 			temp++;
 		}
-		if (!(i % 100)) { printf("."); fflush(stdout);}
 		testvar1 = var + 1;
 		mcs_unlock(&mcs, &node);
 	}
@@ -70,14 +87,12 @@ void *test_func_mcslock(void *arg){
 
 void launch_threads(void *(*fn)(void *)){
 	testvar1 = 0;
-	pthread_t threads[10];
-	for (int i=0; i<10; i++){
-		pthread_create(&threads[i], NULL, fn, NULL);
+	pthread_t threads[THREADS];
+	#pragma omp parallel for
+	for (int i=0; i<THREADS; i++){
+		fn(NULL);
 	}
-	for (int i=0; i<10; i++){
-		pthread_join(threads[i], NULL);
-	}
-	if(testvar1 != 16000) printf("locking failed\n");
+	if(testvar1 != THREADS*LOOPS) printf("locking failed\n");
 }
 
 int main(int argc, char *argv[]){
@@ -90,7 +105,11 @@ int main(int argc, char *argv[]){
 	start = CycleTimer::currentSeconds();
 	launch_threads(test_func_mcslock);
 	double dt3 = CycleTimer::currentSeconds() - start;
+	start = CycleTimer::currentSeconds();
+	launch_threads(test_func_critical);
+	double dt4 = CycleTimer::currentSeconds() - start;
 	printf("\nticket lock: %f\n", dt2 / dt1);
 	printf("mcs lock: %f\n", dt3 / dt1);
+	printf("critical: %f\n", dt4 / dt1);
 	return 0;
 }
