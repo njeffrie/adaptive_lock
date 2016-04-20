@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Adaptive Lock : Workload-Sensitive Locks for Critical Sections Facing Variable Access Patterns">
+    <meta name="description" content="Adaptive Lock : Usage sensitive locking for critical sections facing changing workloads">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/njeffrie/adaptive_lock">View on GitHub</a>
 
           <h1 id="project_title">Adaptive Lock</h1>
-          <h2 id="project_tagline">Workload-Sensitive Locks for Critical Sections Facing Variable Access Patterns</h2>
+          <h2 id="project_tagline">Usage sensitive locking for critical sections facing changing workloads</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/njeffrie/adaptive_lock/zipball/master">Download this project as a .zip file</a>
@@ -35,12 +35,12 @@
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
 <p>Nat Jeffries (<a href="https://github.com/njeffrie" class="user-mention">@njeffrie</a>)
-Madhav Iyengar (<a href="https://github.com/m-iyengar" class="user-mention">@m-iyengar</a>)</p>
+Madhav Ieyngar (<a href="https://github.com/miyengar" class="user-mention">@miyengar</a>)</p>
 
 <h3>
 <a id="summary" class="anchor" href="#summary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary</h3>
 
-<p>We are implementing a workload-sensitive lock library which adapts to changing access patterns using several different mechanisms, including the recent x86 transaction instructions, while presenting a single, simple interface to the user.</p>
+<p>We are implementing a locking library which adapts the type of lock used internally as well as takes advantage of the transaction instructions available on Intel processors.</p>
 
 <h3>
 <a id="background" class="anchor" href="#background" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Background</h3>
@@ -60,27 +60,23 @@ Madhav Iyengar (<a href="https://github.com/m-iyengar" class="user-mention">@m-i
 <h3>
 <a id="deliverables" class="anchor" href="#deliverables" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Deliverables</h3>
 
-<ul>
-	<li>Accurate benchmarks for simple spinlocks, sleeping mutexes, MCS Spinlocks, Readers-Writers locks, and optimistic atomic transactions.</li>
-	<li>Expose a simple locking API which encapsulates several locking mechanisms, and chooses between them based on the workload encountered.</li>
-	<li>Demonstrate measurable speedup over traditional locking when faced by a changing workload</li>
-</ul>
+<p>-Accurate benchmarks for simple spinlocks, sleeping mutexes, MCS Spinlocks, Readers-Writers locks, and optimistic atomic transactions.
+-Expose a simple locking API which encapsulates several locking mechanisms, and chooses between them based on the workload encountered.
+-Demonstrate measurable speedup over traditional locking when faced by a changing workload</p>
 
 <h3>
 <a id="goals" class="anchor" href="#goals" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goals</h3>
 
-<ul>
-	<li>Intelligently choose which locks to use based on system architecture</li>
-	<li>Demonstrate comparable performance when compared to well-chosen locking on a static workload</li>
-	<li>Implement traditional benchmark algorithms with our locks and show performance relative to traditional locks</li>
-</ul>
+<p>-Intelligently choose which locks to use based on system architecture
+-Demonstrate comparable performance when compared to well-chosen locking on a static workload
+-Implement traditional benchmark algorithms with our locks and show performance relative to traditional locks</p>
+
 <h3>
 <a id="expectations" class="anchor" href="#expectations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Expectations</h3>
 
-<ul>
-	<li>Present graphs of speedup over traditional locks</li>
-	<li>Present at least one example workload program, and how to replace traditional locks with our library</li>
-</ul>
+<p>-Present graphs of speedup over traditional locks
+-Present at least one example workload program, and how to replace traditional locks with our library</p>
+
 <h3>
 <a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Platform Choice</h3>
 
@@ -89,12 +85,19 @@ Madhav Iyengar (<a href="https://github.com/m-iyengar" class="user-mention">@m-i
 <h3>
 <a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Schedule</h3>
 
-<p>Week of 4/4 - Benchmark existing locks<br>
-Week of 4/11 -  Implement versions of spinlocks, mutexes, MCS spinlocks, readers-writers locks, and atomic transaction based locks.  Demonstrate at least spinlocks, mutexes, and readers-writers locks for midpoint demo, as well as benchmarks gathered.<br>
-Week of 4/18 - Combine locks under single API, develop logic to transition between them.<br>
-Week of 4/25 - Complete implementation, begin tuning when to choose what lock based on benchmarks gathered at the beginning.<br>
-Week of 5/2 - Finalize implementaiton, experiment changing architecture if time allows.  Finalize webpage before 5/7.<br>
+<p>Week of 4/4 - Begin implementing locks.  Download and begin experimenting with benchmark suites.
+Week of 4/11 -  Finish Implementing and testing versions of spinlocks, mutexes, MCS spinlocks, and readers-writers locks. Demonstrate at least spinlocks, mutexes, and readers-writers locks for midpoint demo, as well as benchmarks gathered.
+Week of 4/18 - Combine locks under single API, develop logic to transition between them.
+Week of 4/25 - Complete implementation, begin tuning when to choose what lock based on benchmarks gathered at the beginning.
+Week of 5/2 - Finalize implementaiton, experiment changing architecture if time allows.  Finalize webpage before 5/7.
 5/9- Parallelism Competition</p>
+
+<h3>
+<a id="project-checkpoint" class="anchor" href="#project-checkpoint" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Project Checkpoint</h3>
+
+<p>We have completed implementations for all of the locks we intend to use, and have begun analyzing the performance of each lock on the latedays phi machines.  We have already found improvements up to 15% with simple locking tests on workloads which involve high contention across a large number of processors when compared to pthread mutexes.  We have begun exploring the PARASEC benchmarks and plan to begin inserting our locks in the place of mutexes, omp critical sections and other locking.</p>
+
+<p>Moving forward, we plan to finish thorough testing and evaluation of our reader writer locks under various reader/writer ratios, and begin unifying our implementations under a single locking interface with an underlying state machine to choose which type of locking to use.  We will benchmark each lock type changing reader to writer ratio, contention, and critical section duration.  We plan to evaluate access latencies to make our final decisions for which lock to use under each workload.</p>
       </section>
     </div>
 
