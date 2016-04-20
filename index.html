@@ -98,7 +98,9 @@ Week of 5/2 - Finalize implementaiton, experiment changing architecture if time 
 <p>We have completed implementations for all of the locks we intend to use, and have begun analyzing the performance of each lock on the latedays phi machines.  We have already found improvements up to 15% with simple locking tests on workloads which involve high contention across a large number of processors when compared to pthread mutexes.  We have begun exploring the PARASEC benchmarks and plan to begin inserting our locks in the place of mutexes, omp critical sections and other locking.</p>
 
 <p>Moving forward, we plan to finish thorough testing and evaluation of our reader writer locks under various reader/writer ratios, and begin unifying our implementations under a single locking interface with an underlying state machine to choose which type of locking to use.  We will benchmark each lock type changing reader to writer ratio, contention, and critical section duration.  We plan to evaluate access latencies to make our final decisions for which lock to use under each workload.</p>
-      </section>
+      
+<p>For the parallelism competition, we expect to produce both graphs and demos running some of the benchmarks.  Our largest concerns are finding and nailing down specifically which workloads to use, figuring out better how to use the phi coprocessor on latedays instead of relying on the OpenMP abstraction, and finding workloads which make use of read write locking, or alternatively coming up with our own.</p>
+</section>
     </div>
 
     <!-- FOOTER  -->
