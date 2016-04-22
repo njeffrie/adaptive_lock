@@ -1,4 +1,4 @@
-BINARIES = ticket_lock_basic rwlock_test
+BINARIES = lock_test rwlock_test
 LDFLAGS = -lpthread -openmp -offload-attribute-target=mic -DRUN_MIC
 BINARY_DIRECTORY = binaries/
 #CXX = g++
