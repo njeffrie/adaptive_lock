@@ -2,6 +2,12 @@
  * Implementation of MCS-Spinlock using GCC atomic built-ins
  */
 
+#ifndef MCS_LOCK_H
+#define MCS_LOCK_H
+
+#include <stddef.h>
+#include "atomics_x86.h"
+
 typedef struct lock_qnode {
 	struct lock_qnode *next;
 	unsigned char wait;
@@ -15,7 +21,7 @@ static inline void mcs_lock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 	qnode->next = NULL;
 
 	// swap self with most recent locker (new lockers will see this qnode)
-	lock_qnode_t *prev = __atomic_exchange_n(lock, qnode, __ATOMIC_ACQ_REL);
+	lock_qnode_t *prev = lock_xchg_64(lock, qnode);
 	if (prev) { // if !prev, no locker, take lock just with the atomic
 		qnode->wait = 1;
 		prev->next = qnode;
@@ -30,8 +36,7 @@ static inline void mcs_unlock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 	if (!qnode->next) {
 		// check if we are the final locker, change state to unlocked
 		mcs_lock_t last = qnode;
-		if (__atomic_compare_exchange_n(lock, &last, NULL, false, 
-				__ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+		if (lock_cmpxchg_64(lock, qnode, NULL) == qnode)
 			return;
 
 		// synchronize with next thread
@@ -41,3 +46,5 @@ static inline void mcs_unlock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 	// release next thread
 	qnode->next->wait = 0;
 }
+
+#endif /* MCS_LOCK_H */
