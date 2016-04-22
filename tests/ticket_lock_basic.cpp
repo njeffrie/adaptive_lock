@@ -15,8 +15,8 @@
 #include <omp.h>
 
 #define LOOPS 10000
-#define DELAY_LOOP 1000
-#define THREADS 256
+#define DELAY_LOOP 10
+#define THREADS 600
 
 using namespace std;
 
@@ -99,17 +99,21 @@ int main(int argc, char *argv[]){
 	double start = CycleTimer::currentSeconds();
 	launch_threads(test_func_mutex);
 	double dt1 = CycleTimer::currentSeconds() - start;
-	start = CycleTimer::currentSeconds();
+	printf("finished mutex\n");
+	/*start = CycleTimer::currentSeconds();
 	launch_threads(test_func_ticketlock);
 	double dt2 = CycleTimer::currentSeconds() - start;
+	printf("finished ticketlock\n");
 	start = CycleTimer::currentSeconds();
 	launch_threads(test_func_mcslock);
 	double dt3 = CycleTimer::currentSeconds() - start;
-	start = CycleTimer::currentSeconds();
+	printf("finished mcslock\n");
+	*/start = CycleTimer::currentSeconds();
 	launch_threads(test_func_critical);
 	double dt4 = CycleTimer::currentSeconds() - start;
-	printf("\nticket lock: %f\n", dt2 / dt1);
-	printf("mcs lock: %f\n", dt3 / dt1);
+	printf("finished critical\n");
+	//printf("ticket lock: %f\n", dt2 / dt1);
+	//printf("mcs lock: %f\n", dt3 / dt1);
 	printf("critical: %f\n", dt4 / dt1);
 	return 0;
 }

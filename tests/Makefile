@@ -1,11 +1,10 @@
-BINARIES = ticket_lock_basic
-LDFLAGS = -lpthread
+BINARIES = ticket_lock_basic rwlock_test
+LDFLAGS = -lpthread -openmp -offload-attribute-target=mic -DRUN_MIC
 BINARY_DIRECTORY = binaries/
-CXX = g++
+#CXX = g++
+CXX = icc -m64 -std=c++11
 
 all: $(BINARIES)
-%.o: %.cu
-	$(NVCC) $(ICUDAFLAGS) -c -o $@ $<
 
 %: %.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $<

@@ -25,7 +25,7 @@ typedef struct mcs_rwlock {
 	unsigned long num_read;
 } mcs_rwlock_t;
 
-#define INIT_MCS_RWLOCK (mcs_rwlock_t)NULL
+#define INIT_MCS_RWLOCK (mcs_rwlock_t){NULL, NULL, 0}
 #define INIT_RLOCK_QNODE \
 	(rwlock_qnode_t){NULL, (rwlock_state_t){1, RWLOCK_NIL}, RWLOCK_READ}
 #define INIT_WLOCK_QNODE \

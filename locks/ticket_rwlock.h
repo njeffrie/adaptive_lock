@@ -8,6 +8,8 @@ typedef unsigned long long rwlock_count_t;
 #define WCNT_INC 0x1
 #define W_MASK 0xffffffff
 
+#define INIT_TICKET_RWLOCK (ticket_rwlock_t){0,0}
+
 typedef struct ticket_rwlock {
 	rwlock_count_t requests;
 	rwlock_count_t completions;
