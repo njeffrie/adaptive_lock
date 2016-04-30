@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**	
  *	@brief atomic compare-and-swap wrapper for x86_64 
  *
@@ -37,5 +41,9 @@ uint64_t _lock_xchg_64(uint64_t *data, uint64_t new_val);
 uint64_t _lock_xadd_64(uint64_t *data, uint64_t addend);
 #define lock_xadd_64(data, addend) \
 	(typeof(*(data)))_lock_xadd_64((uint64_t *)data, (uint64_t)addend)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ATOMICS_X86_H */

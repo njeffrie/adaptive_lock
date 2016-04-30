@@ -16,9 +16,17 @@ typedef struct ticket_rwlock {
 	rwlock_count_t completions;
 } ticket_rwlock_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void ticket_rlock(ticket_rwlock_t *lock);
 void ticket_runlock(ticket_rwlock_t *lock);
 void ticket_wlock(ticket_rwlock_t *lock);
 void ticket_wunlock(ticket_rwlock_t *lock);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MCS_TICKET_RWLOCK_H */

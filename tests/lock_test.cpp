@@ -5,10 +5,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <iostream>
-#include "../locks/mcs_lock.h"
-//#include "../locks/mcs_rwlock.h"
-#include "../locks/ticket_lock.h"
-//#include "../locks/ticket_rwlock.h"
+#include <mcs_queue_lock.h>
+#include <mcs_ticket_lock.h>
 #include <assert.h>
 #include <time.h>
 #include "CycleTimer.h"

@@ -1,6 +1,6 @@
 ROOT=$(shell pwd)
 INC=$(ROOT)/inc
-CC=gcc
+CC=gcc 
 CFLAGS=-c -fpic -Wall -Werror -m64
 INCFLAGS=-I$(INC)
 LIBFLAGS=-shared

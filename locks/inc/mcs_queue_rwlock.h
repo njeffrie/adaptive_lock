@@ -23,9 +23,17 @@ typedef struct mcs_rwlock {
 	uint64_t num_read;
 } mcs_rwlock_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void mcs_rlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode);
 void mcs_runlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode);
 void mcs_wlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode);
 void mcs_wunlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MCS_QUEUE_RWLOCK_H */
