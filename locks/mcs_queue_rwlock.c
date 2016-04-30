@@ -1,45 +1,17 @@
 /*
- * Implementation of MCS-RWlock using GCC atomic built-ins
+ * Implementation of MCS-RWlock 
  */
 
-#ifndef MCS_RWLOCK_H
-#define MCS_RWLOCK_H
-
 #include <stddef.h>
-#include "atomics_x86.h"
+#include <atomics_x86.h>
+#include <mcs_queue_rwlock.h>
 
-typedef enum rwlock_type {
-	RWLOCK_READ,
-	RWLOCK_WRITE,
-	RWLOCK_NIL
-} rwlock_type_t;
-
-typedef union __attribute__((packed)) rwlock_state {
-	uint64_t bits;
-	struct __attribute((packed)) state {
-		uint32_t spinning;
-		rwlock_type_t next_type;
-	} state;
-} rwlock_state_t;
-
-typedef struct rwlock_qnode {
-	struct rwlock_qnode *next;
-	rwlock_state_t state;
-	rwlock_type_t type;
-} rwlock_qnode_t;
-
-typedef struct mcs_rwlock {
-	rwlock_qnode_t *tail;
-	rwlock_qnode_t *next_wr;
-	uint64_t num_read;
-} mcs_rwlock_t;
-
-#define STATE_WAIT_NIL ((RWLOCK_NIL << 32) | 1)
-#define STATE_WAIT_READ ((RWLOCK_READ << 32) | 1)
-#define STATE_WAIT_WRITE ((RWLOCK_WRITE << 32) | 1)
-#define STATE_NOWAIT_NIL ((RWLOCK_NIL << 32) | 0)
-#define STATE_NOWAIT_READ ((RWLOCK_READ << 32) | 0)
-#define STATE_NOWAIT_WRITE ((RWLOCK_WRITE << 32) | 0)
+#define STATE_WAIT_NIL (((uint64_t)RWLOCK_NIL << 32) | 1)
+#define STATE_WAIT_READ (((uint64_t)RWLOCK_READ << 32) | 1)
+#define STATE_WAIT_WRITE (((uint64_t)RWLOCK_WRITE << 32) | 1)
+#define STATE_NOWAIT_NIL (((uint64_t)RWLOCK_NIL << 32) | 0)
+#define STATE_NOWAIT_READ (((uint64_t)RWLOCK_READ << 32) | 0)
+#define STATE_NOWAIT_WRITE (((uint64_t)RWLOCK_WRITE << 32) | 0)
 #define STATE(next_type, wait) (((next_type) << 32) | (wait))
 
 #define INIT_MCS_RWLOCK (mcs_rwlock_t){NULL, NULL, 0}
@@ -48,7 +20,7 @@ typedef struct mcs_rwlock {
 #define INIT_WLOCK_QNODE \
 	(rwlock_qnode_t){NULL, STATE_WAIT_NIL, RWLOCK_WRITE}
 
-static inline void mcs_rlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
+void mcs_rlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 	*qnode = INIT_RLOCK_QNODE;
 
 	// set self as next locker (and try to take lock)
@@ -84,7 +56,7 @@ static inline void mcs_rlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 	}
 }
 
-static inline void mcs_runlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
+void mcs_runlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 	// check for next thread
 	if (qnode->next || (lock_cmpxchg_64(lock, qnode, NULL) == qnode)) {
 		// wait for next thread to identify itself
@@ -102,7 +74,7 @@ static inline void mcs_runlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 		writer->state.state.spinning = 0;
 }
 
-static inline void mcs_wlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
+void mcs_wlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 	*qnode = INIT_WLOCK_QNODE;
 
 	// get previous thread (and try to set as owner)
@@ -123,7 +95,7 @@ static inline void mcs_wlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 	while (qnode->state.state.spinning);
 }
 
-static inline void mcs_wunlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
+void mcs_wunlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 	// check (and wait) for successor
 	if (qnode->next || !(lock_cmpxchg_64(lock, qnode, NULL) == qnode)) {
 		while (qnode->next);
@@ -136,5 +108,3 @@ static inline void mcs_wunlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 		next->state.state.spinning = 0;
 	}
 }
-
-#endif /* MCS_RWLOCK_H */

@@ -1,6 +1,7 @@
 #ifndef ATOMICS_X86_H
 #define ATOMICS_X86_H
 
+#include <stdint.h>
 #include <stddef.h>
 
 /**	
