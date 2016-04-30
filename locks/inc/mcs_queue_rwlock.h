@@ -9,13 +9,7 @@ typedef enum rwlock_type {
 	RWLOCK_NIL
 } rwlock_type_t;
 
-typedef union __attribute__((packed)) rwlock_state {
-	uint64_t bits;
-	struct __attribute((packed)) state {
-		uint32_t spinning;
-		rwlock_type_t next_type;
-	} state;
-} rwlock_state_t;
+typedef uint64_t rwlock_state_t;
 
 typedef struct rwlock_qnode {
 	struct rwlock_qnode *next;

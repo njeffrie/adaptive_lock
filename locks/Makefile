@@ -17,3 +17,6 @@ all: $(LIBS)
 
 %.o: %.S
 	$(CC) $(CFLAGS) -o $@ $<
+
+clean:
+	rm -rf $(OBJECTS) $(LIBS)
