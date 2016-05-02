@@ -6,24 +6,6 @@
 #include <atomics_x86.h>
 #include <mcs_queue_rwlock.h>
 
-#define STATE_SET_NEXT(state, next) (((state) & 0xffffffff) | ((next) << 32))
-#define STATE_GET_NEXT(state) ((state) >> 32)
-#define STATE_GET_SPIN(state) ((state) & 0x1)
-#define STATE_SET_SPIN(state, spin) (((state) & ~0x1) | (spin))
-#define STATE_WAIT_NIL (((uint64_t)RWLOCK_NIL << 32) | 1)
-#define STATE_WAIT_READ (((uint64_t)RWLOCK_READ << 32) | 1)
-#define STATE_WAIT_WRITE (((uint64_t)RWLOCK_WRITE << 32) | 1)
-#define STATE_NOWAIT_NIL (((uint64_t)RWLOCK_NIL << 32) | 0)
-#define STATE_NOWAIT_READ (((uint64_t)RWLOCK_READ << 32) | 0)
-#define STATE_NOWAIT_WRITE (((uint64_t)RWLOCK_WRITE << 32) | 0)
-#define STATE(next_type, wait) (((next_type) << 32) | (wait))
-
-#define INIT_MCS_RWLOCK (mcs_rwlock_t){NULL, NULL, 0}
-#define INIT_RLOCK_QNODE \
-	(rwlock_qnode_t){NULL, STATE_WAIT_NIL, RWLOCK_READ}
-#define INIT_WLOCK_QNODE \
-	(rwlock_qnode_t){NULL, STATE_WAIT_NIL, RWLOCK_WRITE}
-
 void mcs_rlock(mcs_rwlock_t *lock, rwlock_qnode_t *qnode) {
 	*qnode = INIT_RLOCK_QNODE;
 
