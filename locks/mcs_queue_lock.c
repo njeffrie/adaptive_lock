@@ -4,13 +4,14 @@
 
 #include <mcs_queue_lock.h>
 #include <stddef.h>
-#include <atomics_x86.h>
+//#include <atomics_x86.h>
 
 void mcs_lock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 	qnode->next = NULL;
 
 	// swap self with most recent locker (new lockers will see this qnode)
-	lock_qnode_t *prev = lock_xchg_64(lock, qnode);
+	//lock_qnode_t *prev = lock_xchg_64(lock, qnode);
+	lock_qnode_t *prev = __sync_lock_test_and_set(lock, qnode);
 	if (prev) { // if !prev, no locker, take lock just with the atomic
 		qnode->wait = 1;
 		prev->next = qnode;
@@ -24,7 +25,8 @@ void mcs_unlock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 	// check if there is a thread to hand the lock to
 	if (!qnode->next) {
 		// check if we are the final locker, change state to unlocked
-		if (lock_cmpxchg_64(lock, qnode, NULL) == qnode)
+		//if (lock_cmpxchg_64(lock, qnode, NULL) == qnode)
+		if (__sync_bool_compare_and_swap(lock, qnode, NULL))
 			return;
 
 		// synchronize with next thread

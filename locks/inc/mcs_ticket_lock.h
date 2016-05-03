@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 typedef struct ticketlock {
-	uint64_t ticket;
+	uint64_t ticket __attribute__((aligned(64)));
 	uint64_t turn;
 } ticketlock_t;
 

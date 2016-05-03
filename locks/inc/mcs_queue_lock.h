@@ -6,7 +6,7 @@
 typedef struct lock_qnode {
 	struct lock_qnode *next;
 	unsigned char wait;
-} lock_qnode_t;
+} __attribute__((aligned(64))) lock_qnode_t;
 
 typedef lock_qnode_t *mcs_lock_t;
 

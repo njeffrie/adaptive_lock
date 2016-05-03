@@ -33,7 +33,7 @@ typedef struct rwlock_qnode {
 	struct rwlock_qnode *next;
 	rwlock_state_t state;
 	rwlock_type_t type;
-} rwlock_qnode_t;
+} __attribute__((aligned(64))) rwlock_qnode_t;
 
 typedef struct mcs_rwlock {
 	rwlock_qnode_t *tail;

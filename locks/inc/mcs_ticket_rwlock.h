@@ -12,7 +12,7 @@ typedef uint64_t rwlock_count_t;
 #define INIT_TICKET_RWLOCK (ticket_rwlock_t){0,0}
 
 typedef struct ticket_rwlock {
-	rwlock_count_t requests;
+	rwlock_count_t requests __attribute__((aligned(64)));
 	rwlock_count_t completions;
 } ticket_rwlock_t;
 
