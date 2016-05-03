@@ -7,34 +7,38 @@
 #include <iostream>
 #include <mcs_queue_lock.h>
 #include <mcs_ticket_lock.h>
+#include <tts_lock.h>
 #include <assert.h>
 #include <time.h>
 #include "CycleTimer.h"
 #include <omp.h>
 
-#define LOOPS 10000
+#define LOOPS 10
 #define DELAY_LOOP 10
-#define THREADS 600
+#define THREADS 2
 
 using namespace std;
 
-int testvar1 = 0;
-int testvar2 = 0;
+int shared;
 
 ticketlock_t l = INIT_TICKETLOCK;
-pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 mcs_lock_t mcs = INIT_MCS_LOCK;
+ttslock_t tts = INIT_TTSLOCK;  
 
-void *test_func_mutex(void *arg){
+inline void test_fn(){
+	int var = shared;
+	int temp = 0;
+	for (int j=0; j<DELAY_LOOP; j++){
+		temp++;
+	}
+	shared = var + 1;
+}
+
+void *test_func_tts(void *arg){
 	for (int i=0; i<LOOPS; i++){
-		pthread_mutex_lock(&m);
-		int var = testvar1;
-		int temp = 0;
-		for (int j=0; j<DELAY_LOOP; j++){
-			temp++;
-		}
-		testvar1 = var + 1;
-		pthread_mutex_unlock(&m);
+		tts_lock(&tts);
+		test_fn();
+		tts_unlock(&tts);
 	}
 	return arg;
 }
@@ -43,12 +47,7 @@ void *test_func_critical(void *arg){
 	for (int i=0; i<LOOPS; i++){
 		#pragma omp critical 
 		{
-			int var = testvar1;
-			int temp = 0;
-			for (int j=0; j<DELAY_LOOP; j++){
-				temp++;
-			}
-			testvar1 = var + 1;
+			test_fn();
 		}
 	}
 	return arg;
@@ -57,12 +56,7 @@ void *test_func_critical(void *arg){
 void *test_func_ticketlock(void *arg){
 	for (int i=0; i<LOOPS; i++){
 		ticket_lock(&l);
-		int var = testvar1;
-		int temp = 0;
-		for (int j=0; j<DELAY_LOOP; j++){
-			temp++;
-		}
-		testvar1 = var + 1;
+		test_fn();
 		ticket_unlock(&l);
 	}
 	return arg;
@@ -72,44 +66,46 @@ void *test_func_mcslock(void *arg){
 	for (int i=0; i<LOOPS; i++){
 		lock_qnode_t node;
 		mcs_lock(&mcs, &node);
-		int var = testvar1;
-		int temp = 0;
-		for (int j=0; j<DELAY_LOOP; j++){
-			temp++;
-		}
-		testvar1 = var + 1;
+		test_fn();
 		mcs_unlock(&mcs, &node);
 	}
 	return arg;
 }
 
-void launch_threads(void *(*fn)(void *)){
-	testvar1 = 0;
+double launch_threads(void *(*fn)(void *)){
+	shared = 0;
+	double start = CycleTimer::currentSeconds();
+#ifdef PTHREAD
 	pthread_t threads[THREADS];
-	#pragma omp parallel for
+	for (int i=0; i<THREADS; i++){
+		pthread_create(&threads[i], NULL, fn, NULL);
+		//fn(NULL);
+	}
+	for (int i=0; i<THREADS; i++){
+		pthread_join(threads[i], NULL);
+		//fn(NULL);
+	}
+#else
+	#pragma omp parallel for num_threads(THREADS)
 	for (int i=0; i<THREADS; i++){
 		fn(NULL);
 	}
-	if(testvar1 != THREADS*LOOPS) printf("locking failed\n");
+
+#endif
+	if(shared != THREADS*LOOPS) printf("locking failed\n");
+	return CycleTimer::currentSeconds() - start;
 }
 
 int main(int argc, char *argv[]){
-	double start = CycleTimer::currentSeconds();
-	launch_threads(test_func_mutex);
-	double dt1 = CycleTimer::currentSeconds() - start;
-	printf("finished mutex\n");
-	start = CycleTimer::currentSeconds();
-	launch_threads(test_func_ticketlock);
-	double dt2 = CycleTimer::currentSeconds() - start;
+	double dt1, dt2, dt3, dt4;
+	dt1 = launch_threads(test_func_tts);
+	printf("finished tts\n");
+	dt2 = launch_threads(test_func_ticketlock);
 	printf("finished ticketlock\n");
-	start = CycleTimer::currentSeconds();
-	launch_threads(test_func_mcslock);
-	double dt3 = CycleTimer::currentSeconds() - start;
+	dt3 = launch_threads(test_func_mcslock);
 	printf("finished mcslock\n");
-	start = CycleTimer::currentSeconds();
-	launch_threads(test_func_critical);
-	double dt4 = CycleTimer::currentSeconds() - start;
-	printf("finished critical\n");
+	dt4 = launch_threads(test_func_critical);
+	printf("finished tts\n");
 	printf("ticket lock: %f\n", dt2 / dt1);
 	printf("mcs lock: %f\n", dt3 / dt1);
 	printf("critical: %f\n", dt4 / dt1);
