@@ -4,7 +4,7 @@
 
 #include <mcs_queue_lock.h>
 #include <stddef.h>
-//#include <atomics_x86.h>
+#include <atomics_x86.h>
 
 void mcs_lock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 	qnode->next = NULL;

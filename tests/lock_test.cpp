@@ -25,39 +25,39 @@ ticketlock_t l = INIT_TICKETLOCK;
 mcs_lock_t mcs = INIT_MCS_LOCK;
 ttslock_t tts = INIT_TTSLOCK;  
 
-inline void test_fn(){
-	int var = shared;
+inline void delay(int cycles){
 	int temp = 0;
-	for (int j=0; j<DELAY_LOOP; j++){
-		temp++;
-	}
-	shared = var + 1;
+	for (int i=0; i<cycles; i++) temp++;
 }
 
-void *test_func_tts(void *arg){
-	for (int i=0; i<LOOPS; i++){
-		tts_lock(&tts);
-		test_fn();
-		tts_unlock(&tts);
-	}
-	return arg;
+#define TEST_FN(fname, lock, unlock, l)\
+void *fname(void *args){\
+	for (int i=0; i<LOOPS; i++){\
+		lock(&l);\
+		int var = shared;\
+		delay(DELAY_LOOP);\
+		shared = var + 1;\
+		unlock(&l);\
+	}\
+	return args;\
 }
 
+TEST_FN(test_func_tts, tts_lock, tts_unlock, tts)
+TEST_FN(test_func_ticketlock, ticket_lock, ticket_unlock, l);
+//TEST_FN(test_func_mcslock, lock_qnode_t node; mcs_lock, mcs_unlock, mcs);
+
+//uses omp critical
 void *test_func_critical(void *arg){
 	for (int i=0; i<LOOPS; i++){
 		#pragma omp critical 
 		{
-			test_fn();
+			int var = shared;
+			int temp = 0;
+			for (int j=0; j<DELAY_LOOP; j++){
+				temp++;
+			}
+			shared = var + 1;
 		}
-	}
-	return arg;
-}
-
-void *test_func_ticketlock(void *arg){
-	for (int i=0; i<LOOPS; i++){
-		ticket_lock(&l);
-		test_fn();
-		ticket_unlock(&l);
 	}
 	return arg;
 }
@@ -66,7 +66,12 @@ void *test_func_mcslock(void *arg){
 	for (int i=0; i<LOOPS; i++){
 		lock_qnode_t node;
 		mcs_lock(&mcs, &node);
-		test_fn();
+		int var = shared;
+		int temp = 0;
+		for (int j=0; j<DELAY_LOOP; j++){
+			temp++;
+		}
+		shared = var + 1;
 		mcs_unlock(&mcs, &node);
 	}
 	return arg;

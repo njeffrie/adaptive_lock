@@ -4,7 +4,7 @@ LOCKDIR=$(ROOT)/locks
 TESTDIR=$(ROOT)/tests
 
 CXX=icc -m64 #-std=c++11
-CXXFLAGS=-I$(INC) -O3 -Wall -fopenmp -offload-attribute-target=mic -DRUN_MIC
+CXXFLAGS=-I$(INC) -O3 -Wall -openmp -DRUN_MIC -offload-attribute-target=mic
 
 #CPPFLAGS=-std=c++11 -fpic -m64 -O3 -Wall -openmp -offload-attribute-target=mic -DRUN_MIC
 #CFLAGS=-c -fpic -Wall -m64 -O3 -openmp -offload-attribute-target=mic -DRUN_MIC
