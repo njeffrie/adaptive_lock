@@ -13,9 +13,11 @@
 #include "CycleTimer.h"
 #include <omp.h>
 
-#define LOOPS 10
+#define PTHREAD
+
+#define LOOPS 100000
 #define DELAY_LOOP 10
-#define THREADS 2
+#define THREADS 10
 
 using namespace std;
 
@@ -30,49 +32,43 @@ inline void delay(int cycles){
 	for (int i=0; i<cycles; i++) temp++;
 }
 
-#define TEST_FN(fname, lock, unlock, l)\
+#define TEST_INTERNAL\
+	int var = shared;\
+	delay(DELAY_LOOP);\
+	shared = var + 1\
+
+#define TEST_SETUP(fname, local_t, lock, unlock, l)\
+void *fname(void *args){\
+	for (int i=0; i<LOOPS; i++){\
+		local_t loc;\
+		lock(&l, &loc);\
+		TEST_INTERNAL;\
+		unlock(&l, &loc);\
+	}\
+	return args;\
+}
+
+#define TEST_NOSETUP(fname, lock, unlock, l)\
 void *fname(void *args){\
 	for (int i=0; i<LOOPS; i++){\
 		lock(&l);\
-		int var = shared;\
-		delay(DELAY_LOOP);\
-		shared = var + 1;\
+		TEST_INTERNAL;\
 		unlock(&l);\
 	}\
 	return args;\
 }
 
-TEST_FN(test_func_tts, tts_lock, tts_unlock, tts)
-TEST_FN(test_func_ticketlock, ticket_lock, ticket_unlock, l);
-//TEST_FN(test_func_mcslock, lock_qnode_t node; mcs_lock, mcs_unlock, mcs);
+TEST_NOSETUP(test_func_tts, tts_lock, tts_unlock, tts)
+TEST_NOSETUP(test_func_ticketlock, ticket_lock, ticket_unlock, l)
+TEST_SETUP(test_func_mcslock, lock_qnode_t, mcs_lock, mcs_unlock, mcs)
 
 //uses omp critical
 void *test_func_critical(void *arg){
 	for (int i=0; i<LOOPS; i++){
 		#pragma omp critical 
 		{
-			int var = shared;
-			int temp = 0;
-			for (int j=0; j<DELAY_LOOP; j++){
-				temp++;
-			}
-			shared = var + 1;
+			TEST_INTERNAL;
 		}
-	}
-	return arg;
-}
-
-void *test_func_mcslock(void *arg){
-	for (int i=0; i<LOOPS; i++){
-		lock_qnode_t node;
-		mcs_lock(&mcs, &node);
-		int var = shared;
-		int temp = 0;
-		for (int j=0; j<DELAY_LOOP; j++){
-			temp++;
-		}
-		shared = var + 1;
-		mcs_unlock(&mcs, &node);
 	}
 	return arg;
 }
@@ -103,14 +99,14 @@ double launch_threads(void *(*fn)(void *)){
 
 int main(int argc, char *argv[]){
 	double dt1, dt2, dt3, dt4;
+	printf("launched tts\n");
 	dt1 = launch_threads(test_func_tts);
-	printf("finished tts\n");
+	printf("launched ticket\n");
 	dt2 = launch_threads(test_func_ticketlock);
-	printf("finished ticketlock\n");
+	printf("launched mcs\n");
 	dt3 = launch_threads(test_func_mcslock);
-	printf("finished mcslock\n");
+	printf("launched critical\n");
 	dt4 = launch_threads(test_func_critical);
-	printf("finished tts\n");
 	printf("ticket lock: %f\n", dt2 / dt1);
 	printf("mcs lock: %f\n", dt3 / dt1);
 	printf("critical: %f\n", dt4 / dt1);

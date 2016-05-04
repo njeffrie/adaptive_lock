@@ -3,11 +3,12 @@
 
 #include <stddef.h>
 
-typedef struct lock_qnode {
-	struct lock_qnode *next;
+struct lock_qnode {
+	volatile struct lock_qnode *next;
 	unsigned char wait;
-} __attribute__((aligned(64))) lock_qnode_t;
+} __attribute__((aligned(64)));
 
+typedef volatile struct lock_qnode lock_qnode_t;
 typedef lock_qnode_t *mcs_lock_t;
 
 #define INIT_MCS_LOCK (mcs_lock_t)NULL

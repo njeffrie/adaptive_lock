@@ -15,12 +15,6 @@
 #define STATE_NOWAIT_WRITE (((uint64_t)RWLOCK_WRITE << 32) | 0)
 #define STATE(next_type, wait) (((next_type) << 32) | (wait))
 
-#define INIT_MCS_RWLOCK (mcs_rwlock_t){NULL, NULL, 0}
-#define INIT_RLOCK_QNODE \
-	(rwlock_qnode_t){NULL, STATE_WAIT_NIL, RWLOCK_READ}
-#define INIT_WLOCK_QNODE \
-	(rwlock_qnode_t){NULL, STATE_WAIT_NIL, RWLOCK_WRITE}
-
 typedef enum rwlock_type {
 	RWLOCK_READ,
 	RWLOCK_WRITE,
@@ -29,17 +23,24 @@ typedef enum rwlock_type {
 
 typedef uint64_t rwlock_state_t;
 
-typedef struct rwlock_qnode {
-	struct rwlock_qnode *next;
+struct rwlock_qnode {
+	volatile struct rwlock_qnode *next;
 	rwlock_state_t state;
 	rwlock_type_t type;
-} __attribute__((aligned(64))) rwlock_qnode_t;
+} __attribute__((aligned(64)));
+typedef volatile struct rwlock_qnode rwlock_qnode_t;
 
 typedef struct mcs_rwlock {
 	rwlock_qnode_t *tail;
 	rwlock_qnode_t *next_wr;
 	uint64_t num_read;
 } mcs_rwlock_t;
+
+#define INIT_MCS_RWLOCK (mcs_rwlock_t){NULL, NULL, 0}
+#define INIT_RLOCK_QNODE \
+	(struct rwlock_qnode){NULL, STATE_WAIT_NIL, RWLOCK_READ}
+#define INIT_WLOCK_QNODE \
+	(struct rwlock_qnode){NULL, STATE_WAIT_NIL, RWLOCK_WRITE}
 
 #ifdef __cplusplus
 extern "C" {

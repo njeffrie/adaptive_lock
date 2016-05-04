@@ -13,7 +13,7 @@ typedef uint64_t rwlock_count_t;
 
 typedef struct ticket_rwlock {
 	rwlock_count_t requests __attribute__((aligned(64)));
-	rwlock_count_t completions;
+	volatile rwlock_count_t completions __attribute__((aligned(64)));
 } ticket_rwlock_t;
 
 #ifdef __cplusplus

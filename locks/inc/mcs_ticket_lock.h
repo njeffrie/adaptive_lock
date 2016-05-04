@@ -5,7 +5,7 @@
 
 typedef struct ticketlock {
 	uint64_t ticket __attribute__((aligned(64)));
-	uint64_t turn;
+	volatile uint64_t turn __attribute__((aligned(64)));
 } ticketlock_t;
 
 #define INIT_TICKETLOCK (ticketlock_t){0, 0}
