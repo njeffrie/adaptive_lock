@@ -34,6 +34,9 @@ static inline void mcs_lock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 }
 
 static inline void mcs_unlock(mcs_lock_t *lock, lock_qnode_t *qnode) {
+	// TSO so no need for full barrier, prevent load reordering
+	_mm_lfence();
+
 	// check if there is a thread to hand the lock to
 	if (!qnode->next) {
 		// check if we are the final locker, change state to unlocked

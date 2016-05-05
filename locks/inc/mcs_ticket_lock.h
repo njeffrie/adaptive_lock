@@ -29,6 +29,9 @@ static inline void ticket_lock(ticketlock_t *lock) {
 }
 
 static inline void ticket_unlock(ticketlock_t *lock) {
+	// TSO so no need for full barrier, prevent load reordering
+	_mm_lfence();
+
 	// increment turn
 	lock->turn++;
 }
