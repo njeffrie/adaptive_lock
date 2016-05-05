@@ -73,8 +73,11 @@ static inline void mcs_hybrid_unlock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qn
 	// check if there is a thread to hand the lock to
 	if (!qnode->next) {
 		// check if we are the final locker, change state to unlocked
-		if (__sync_bool_compare_and_swap(&lock->tail, qnode, NULL))
+		if (__sync_bool_compare_and_swap(&lock->tail, qnode, NULL)) {
+			// release any new unlocking thread
+			lock->unlock_turn++;
 			return;
+		}
 
 		// synchronize with next thread
 		while (!qnode->next);
