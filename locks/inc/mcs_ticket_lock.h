@@ -20,10 +20,11 @@ static inline void ticket_lock(ticketlock_t *lock) {
 	uint64_t ticket = __sync_fetch_and_add(&lock->ticket, 1);
 	
 	// wait for turn to match this thread's ticket
-	uint64_t turn, cnt;
-	while ((turn = lock->turn) != ticket) {
+	uint64_t cycles;
+	volatile uint64_t cnt;
+	while ((cycles = ticket - lock->turn)) {
 		// proportional back-off
-		for (cnt = ticket; cnt < turn; cnt++);
+		for (cnt = 0; cnt < cycles; cnt++);
 	}
 }
 

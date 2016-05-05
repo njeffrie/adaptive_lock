@@ -1,3 +1,18 @@
+/**
+ * @file mcs_hybrid_lock.h
+ * @brief Hybrid of MCS queue spinlock and MCS ticket spinlock
+ *
+ * Spinlock based on MCS queue-based spinlock and MCS ticket spinlock.
+ * The objective of this implementation is to observe the lower latencies
+ * of the ticket lock in situations of lower contention while transitioning
+ * to the queue lock behavior in situations of higher contention in order
+ * to achieve good scaling. This is done by altering the standard queue lock
+ * implementation such that under low contention, the overhead of the 
+ * additional atomic operation on unlocking is removed from the critical path.
+ *
+ * @author Madhav Iyengar
+ */
+
 #ifndef MCS_HYBRID_LOCK_H
 #define MCS_HYBRID_LOCK_H
 
@@ -45,10 +60,11 @@ static inline void mcs_hybrid_lock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnod
 			while (qnode->wait);
 
 		// wait for this thread to be made head
-		uint64_t turn, cnt;
-		while ((turn = lock->turn) != (cnt = qnode->ticket)) {
+		uint64_t cycles;
+		volatile uint64_t cnt;
+		while ((cycles = qnode->ticket - lock->turn)) {
 			// proportional back-off
-			for ( ; cnt < turn; cnt++);
+			for (cnt = 0 ; cnt < cycles; cnt++);
 		}
 	}
 	// if prev is NULL, xchg got this thread the lock
