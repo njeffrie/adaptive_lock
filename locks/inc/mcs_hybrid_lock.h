@@ -12,11 +12,10 @@ typedef volatile struct hybrid_qnode {
 
 typedef struct mcs_hybrid_lock {
 	hybrid_qnode_t *tail __attribute__((aligned(64)));
-	volatile uint64_t lock_turn __attribute__((aligned(64)));
-	volatile uint64_t unlock_turn __attribute__((aligned(64)));
+	volatile uint64_t turn __attribute__((aligned(64)));
 } mcs_hybrid_lock_t;
 
-#define INIT_HYBRID_LOCK (mcs_hybrid_lock_t){NULL, 0, 0}
+#define INIT_HYBRID_LOCK (mcs_hybrid_lock_t){NULL, 0}
 #define INIT_HYBRID_QNODE (struct hybrid_qnode){NULL, 0, 0, 0}
 
 // threshold for transition between ticketlock and queuelock
@@ -42,51 +41,42 @@ static inline void mcs_hybrid_lock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnod
 		prev->next = qnode;
 	
 		// check if should be scaling to queue behavior
-		if (qnode->ticket - lock->lock_turn > THRESH) 
+		if (qnode->ticket - lock->turn > THRESH) 
 			while (qnode->wait);
 
 		// wait for this thread to be made head
 		uint64_t turn, cnt;
-		while ((turn = lock->lock_turn) != (cnt = qnode->ticket)) {
+		while ((turn = lock->turn) != (cnt = qnode->ticket)) {
 			// proportional back-off
 			for ( ; cnt < turn; cnt++);
 		}
 	}
 	// if prev is NULL, xchg got this thread the lock
 	else {
-		qnode->ticket = lock->lock_turn;
+		qnode->ticket = lock->turn;
 		qnode->valid = 1;
 	}
 }
 
 static inline void mcs_hybrid_unlock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnode) {
 	// release next locking thread
-	lock->lock_turn++;
+	lock->turn++;
 
-	// wait for any predecessors to finish unlocking completely
-	uint64_t turn, cnt;
-	while ((turn = lock->unlock_turn) != (cnt = qnode->ticket)) {
-		// proportional back-off
-		for ( ; cnt < turn; cnt++);
-	}
+	// wait for predecessor if bypassed queue wait on locking
+	while (qnode->wait);
 
 	// check if there is a thread to hand the lock to
 	if (!qnode->next) {
 		// check if we are the final locker, change state to unlocked
-		if (__sync_bool_compare_and_swap(&lock->tail, qnode, NULL)) {
-			// release any new unlocking thread
-			lock->unlock_turn++;
+		if (__sync_bool_compare_and_swap(&lock->tail, qnode, NULL))
 			return;
-		}
 
 		// synchronize with next thread
 		while (!qnode->next);
 	}
 
+	// completely release next thread
 	qnode->next->wait = 0;
-
-	// release next unlocking thread
-	lock->unlock_turn++;
 }
 
 #ifdef __cplusplus
