@@ -17,7 +17,7 @@
 
 #define LOOPS 100000
 #define DELAY_LOOP 10
-#define THREADS 10
+#define THREADS 20
 
 using namespace std;
 
@@ -97,7 +97,7 @@ double launch_threads(void *(*fn)(void *)){
 	return CycleTimer::currentSeconds() - start;
 }
 
-int main(int argc, char *argv[]){
+void run_testes(){
 	double dt1, dt2, dt3, dt4;
 	printf("launched tts\n");
 	dt1 = launch_threads(test_func_tts);
@@ -110,5 +110,12 @@ int main(int argc, char *argv[]){
 	printf("ticket lock: %f\n", dt2 / dt1);
 	printf("mcs lock: %f\n", dt3 / dt1);
 	printf("critical: %f\n", dt4 / dt1);
+}
+
+int main(int argc, char *argv[]){
+	#pragma offload_transfer target(mic)
+	{
+		run_testes();
+	}
 	return 0;
 }

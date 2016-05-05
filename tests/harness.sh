@@ -2,7 +2,7 @@
 
 cd $SCRATCH
 execdir=/home/njeffrie/adaptive_lock/tests
-exe=ticket_lock_basic
+exe=lock_test
 
 cp ${execdir}/${exe} ${exe}
 
