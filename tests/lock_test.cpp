@@ -18,7 +18,7 @@
 
 #define LOOPS 100000
 #define DELAY_LOOP 10
-#define THREADS 15
+#define THREADS 60
 
 using namespace std;
 
@@ -104,26 +104,26 @@ double launch_threads(void *(*fn)(void *)){
 void run_testes(){
 	printf("==================================================\n");
 	double dt1, dt2, dt3, dt4, dt5;
-	//printf("launched tts\n");
+	printf("launched tts\n");
 	dt1 = launch_threads(test_func_tts);
-	//printf("launched ticket\n");
+	printf("launched ticket\n");
 	dt2 = launch_threads(test_func_ticketlock);
-	//printf("launched mcs\n");
+	printf("launched mcs\n");
 	dt3 = launch_threads(test_func_mcslock);
-	//printf("launched mcs hybrid\n");
+	printf("launched mcs hybrid\n");
 	dt4 = launch_threads(test_func_mcshybridlock);
-	//printf("launched critical\n");
+	printf("launched critical\n");
 	dt5 = launch_threads(test_func_critical);
-	printf("Total Elapsed: %f ms, results:\n", 1000 * (dt1 + dt2 + dt3 + dt4 + dt5));
-	printf("ticket lock: %f ", dt2 / dt1);
-	printf("mcs lock: %f ", dt3 / dt1);
-	printf("mcs hybrid lock: %f ", dt4 / dt1);
-	printf("critical: %f\n", dt5 / dt1);
+	printf("Total Elapsed: %.4f ms, results:\n", (dt1 + dt2 + dt3 + dt4 + dt5));
+	printf("ticket lock: %.4f (%.4f) ", dt2 / dt1, dt2);
+	printf("mcs lock: %.4f (%.4f) ", dt3 / dt1, dt3);
+	printf("mcs hybrid lock: %.4f (%.4f) ", dt4 / dt1, dt4);
+	printf("critical: %.4f (%.4f)\n", dt5 / dt1, dt5);
 	printf("==================================================\n\n");
 }
 
 int main(int argc, char *argv[]){
-	#pragma offload target(mic)
+	#pragma offload optional target(mic)
 	{
 		//yes... testes.
 		run_testes();

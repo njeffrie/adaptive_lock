@@ -2,8 +2,10 @@
  *	Implementation of test and test and set lock with exponential backoff
  */
 
+#include <assert.h>
+
 typedef struct ttslock {
-	volatile unsigned int locked;
+	volatile bool locked;
 } ttslock_t;
 
 #define INIT_TTSLOCK (ttslock_t){0}
@@ -15,24 +17,24 @@ inline void ttslock_init(ttslock_t *lock){
 }
 
 inline void wait_cycles(int cycles){
-	int count;
-	for (int i=0; i<cycles; i++){
-		count++;
-	}
+	volatile int i;
+	for (i=0; i<cycles; i++);
 }
 
 /* basic test and test and set lock with exponential backoff */
 inline void tts_lock(ttslock_t *lock){
-	int backoff = 1;
+	/*int backoff = 1;
 	do {
 		while (lock->locked){
 			wait_cycles(backoff);
 			backoff *= 2;
 		}
-	} while (!__sync_bool_compare_and_swap(&lock->locked, UNLOCKED, LOCKED));
+	} */while (__sync_lock_test_and_set(&lock->locked, LOCKED));
 	//while (!lock_cmpxchg_64(&lock->locked, UNLOCKED, LOCKED));
 }
 
 inline void tts_unlock(ttslock_t *lock){
+	//assert(lock->locked);
+	__sync_synchronize();
 	lock->locked = UNLOCKED;
 }
