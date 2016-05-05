@@ -11,13 +11,16 @@ CXXFLAGS=-I$(INC) -O3 -Wall -openmp -DRUN_MIC -offload-attribute-target=mic
 #INCFLAGS=-I$(INC)
 
 
-OBJS=$(LOCKDIR)/atomics_x86.o $(LOCKDIR)/mcs_ticket_lock.o $(LOCKDIR)/mcs_ticket_rwlock.o\
-	$(LOCKDIR)/mcs_queue_lock.o $(LOCKDIR)/mcs_queue_rwlock.o #$(TESTDIR)/lock_test.o\
+#OBJS=$(LOCKDIR)/atomics_x86.o $(LOCKDIR)/mcs_ticket_rwlock.o\
+	$(LOCKDIR)/mcs_queue_rwlock.o 
+
+#$(TESTDIR)/lock_test.o\
 #$(TESTDIR)/rwlock_test.o
 
 TESTS=tests/lock_test tests/rwlock_test
 
-all: clean $(OBJS) $(TESTS)
+#all: clean $(OBJS) $(TESTS)
+all: $(TESTS)
 
 #%: $(OBJS)
 #	$(CXX) $(CXXFLAGS) -std=c++11 -o $@ $(OBJS)

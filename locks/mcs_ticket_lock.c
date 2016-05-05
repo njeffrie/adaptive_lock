@@ -12,7 +12,7 @@ void ticket_lock(ticketlock_t *lock) {
 	uint64_t ticket = __sync_fetch_and_add(&lock->ticket, 1);
 	
 	// wait for turn to match this thread's ticket
-	int64_t turn, cnt;
+	uint64_t turn, cnt;
 	while ((turn = lock->turn) != ticket) {
 		// proportional back-off
 		for (cnt = ticket; cnt < turn; cnt++);

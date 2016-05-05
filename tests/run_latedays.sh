@@ -1,5 +1,6 @@
 #!/bin/bash
 
-rm harness.sh.*
+#PBS -q phi
+rm latedays.qsub.*
 
-qsub harness.sh -n
+qsub latedays.qsub -n
