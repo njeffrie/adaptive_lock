@@ -17,8 +17,8 @@ CXXFLAGS=-I$(INC) -O3 -Wall -openmp -DRUN_MIC -offload-attribute-target=mic
 #$(TESTDIR)/lock_test.o\
 #$(TESTDIR)/rwlock_test.o
 
-TESTS=tests/lock_test tests/rwlock_test
-
+TESTS=tests/lock_test# tests/rwlock_test
+#HEADERS=$(INC)/mcs_hybrid_lock.h $(INC)/mcs_queue_lock.h $(INC)/mcs_ticket_lock.h $(INC)/tts_lock.h
 #all: clean $(OBJS) $(TESTS)
 all: $(TESTS)
 

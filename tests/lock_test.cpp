@@ -16,7 +16,7 @@
 
 //#define PTHREAD
 
-#define LOOPS 100000
+#define LOOPS 1000
 #define DELAY_LOOP 10
 #define THREADS 60
 
@@ -123,7 +123,7 @@ void run_testes(){
 }
 
 int main(int argc, char *argv[]){
-	#pragma offload optional target(mic)
+	#pragma offload target(mic)
 	{
 		//yes... testes.
 		run_testes();

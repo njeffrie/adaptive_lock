@@ -1,0 +1,12 @@
+#!/bin/sh
+#PBS -l nodes=1:ppn=24
+#PBS -lwalltime=0:6:00
+#PBS -q phi
+execdir=/home/njeffrie/adaptive_lock/tests
+exe=lock_test
+
+#cd $PBS_O_WORDIR
+#pbsdsh -u $PBS_O_WORKDIR/lock_test
+
+cp ${execdir}/${exe} ${exe}
+./${exe}
