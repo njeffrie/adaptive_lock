@@ -29,8 +29,8 @@ static inline void ticket_lock(ticketlock_t *lock) {
 }
 
 static inline void ticket_unlock(ticketlock_t *lock) {
-	// TSO so no need for full barrier, prevent load reordering
-	_mm_lfence();
+	// prevent load reordering, no load fence on xeon phi
+	__sync_synchronize();
 
 	// increment turn
 	lock->turn++;

@@ -75,8 +75,8 @@ static inline void mcs_hybrid_lock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnod
 }
 
 static inline void mcs_hybrid_unlock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnode) {
-	// TSO so no need for full barrier, prevent load reordering
-	_mm_lfence();
+	// prevent load reordering, no load fence on xeon phi
+	__sync_synchronize();
 
 	// release next locking thread
 	lock->turn++;

@@ -34,8 +34,8 @@ static inline void mcs_lock(mcs_lock_t *lock, lock_qnode_t *qnode) {
 }
 
 static inline void mcs_unlock(mcs_lock_t *lock, lock_qnode_t *qnode) {
-	// TSO so no need for full barrier, prevent load reordering
-	_mm_lfence();
+	// prevent load reordering, no load fence on xeon phi
+	__sync_synchronize();
 
 	// check if there is a thread to hand the lock to
 	if (!qnode->next) {
