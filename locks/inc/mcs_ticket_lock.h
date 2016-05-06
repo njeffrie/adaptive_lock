@@ -26,7 +26,7 @@ static inline void ticket_lock(ticketlock_t *lock) {
 
 static inline void ticket_unlock(ticketlock_t *lock) {
 	// prevent load reordering, no load fence on xeon phi
-	__sync_synchronize();
+	//__sync_synchronize();
 
 	// increment turn
 	lock->turn++;
