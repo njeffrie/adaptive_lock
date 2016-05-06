@@ -17,6 +17,7 @@
 #define MCS_HYBRID_LOCK_H
 
 #include <stddef.h>
+#include <mic_xeon_phi.h>
 
 typedef volatile struct hybrid_qnode {
 	volatile struct hybrid_qnode *next;
@@ -50,22 +51,23 @@ static inline void mcs_hybrid_lock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnod
 	if (prev) {
 		qnode->wait = 1;
 		// wait for prev to become valid
-		while (!prev->valid);
+		uint64_t i;
+		while (!prev->valid)
+			busy_wait(1, i);
 		qnode->ticket = prev->ticket + 1;
 		qnode->valid = 1;
 		prev->next = qnode;
 	
 		// check if should be scaling to queue behavior
 		if (qnode->ticket - lock->turn > THRESH) 
-			while (qnode->wait);
+			while (qnode->wait)
+				busy_wait(1, i);
 
 		// wait for this thread to be made head
 		uint64_t cycles;
-		volatile uint64_t cnt;
-		while ((cycles = qnode->ticket - lock->turn)) {
+		while ((cycles = qnode->ticket - lock->turn)) 
 			// proportional back-off
-			for (cnt = 0 ; cnt < cycles; cnt++);
-		}
+			busy_wait(cycles, i);
 	}
 	// if prev is NULL, xchg got this thread the lock
 	else {
@@ -82,7 +84,9 @@ static inline void mcs_hybrid_unlock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qn
 	lock->turn++;
 
 	// wait for predecessor if bypassed queue wait on locking
-	while (qnode->wait);
+	uint64_t i;
+	while (qnode->wait)
+		busy_wait(1, i);
 
 	// check if there is a thread to hand the lock to
 	if (!qnode->next) {
@@ -91,7 +95,8 @@ static inline void mcs_hybrid_unlock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qn
 			return;
 
 		// synchronize with next thread
-		while (!qnode->next);
+		while (!qnode->next)
+			busy_wait(1, i);
 	}
 
 	// completely release next thread

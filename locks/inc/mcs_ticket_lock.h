@@ -2,6 +2,7 @@
 #define MCS_TICKET_LOCK_H
 
 #include <stddef.h>
+#include <mic_xeon_phi.h>
 
 typedef struct ticketlock {
 	uint64_t ticket __attribute__((aligned(64)));
@@ -16,16 +17,11 @@ extern "C" {
 
 static inline void ticket_lock(ticketlock_t *lock) {
 	// atomically fetch and increment ticket
-	//uint64_t ticket = lock_xadd_64(&lock->ticket, 1);
 	uint64_t ticket = __sync_fetch_and_add(&lock->ticket, 1);
-	
-	// wait for turn to match this thread's ticket
-	uint64_t cycles;
-	volatile uint64_t cnt;
-	while ((cycles = ticket - lock->turn)) {
+	uint64_t i, cycles;
+	while ((cycles = ticket - lock->turn))
 		// proportional back-off
-		for (cnt = 0; cnt < cycles; cnt++);
-	}
+		busy_wait(cycles, i);
 }
 
 static inline void ticket_unlock(ticketlock_t *lock) {
