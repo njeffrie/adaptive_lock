@@ -2,11 +2,16 @@
 #PBS -l nodes=1:ppn=24
 #PBS -lwalltime=0:6:00
 #PBS -q phi
-execdir=/home/njeffrie/adaptive_lock/tests
+execdir=/home/miyengar/adaptive_lock/tests
 exe=lock_test
 
 #cd $PBS_O_WORDIR
 #pbsdsh -u $PBS_O_WORKDIR/lock_test
+export MIC_ENV_PREFIX=PHI
+export PHI_KMP_AFFINITY=granularity=fine,scatter
+#export PHI_KMP_AFFINITY=granularity=fine,compact
+#export PHI_KMP_PLACE_THREADS=59c,1t
+export PHI_KMP_PLACE_THREADS=59c,4t
 
 cp ${execdir}/${exe} ${exe}
 ./${exe}

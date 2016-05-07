@@ -35,7 +35,7 @@ typedef struct mcs_hybrid_lock {
 #define INIT_HYBRID_QNODE (struct hybrid_qnode){NULL, 0, 0, 0}
 
 // threshold for transition between ticketlock and queuelock
-#define THRESH 5L
+#define THRESH 4L
 
 #ifdef __cplusplus
 extern "C" {
