@@ -59,15 +59,17 @@ static inline void mcs_hybrid_lock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnod
 		prev->next = qnode;
 	
 		// check if should be scaling to queue behavior
-		if (qnode->ticket - lock->turn > THRESH) 
+		if (qnode->ticket - lock->turn > THRESH) {
 			while (qnode->wait)
 				busy_wait(1, i);
-
-		// wait for this thread to be made head
-		uint64_t cycles;
-		while ((cycles = qnode->ticket - lock->turn)) 
-			// proportional back-off
-			busy_wait(cycles, i);
+		}
+		else {
+			// wait for this thread to be made head
+			uint64_t cycles;
+			while ((cycles = qnode->ticket - lock->turn)) 
+				// proportional back-off
+				busy_wait(cycles, i);
+		}
 	}
 	// if prev is NULL, xchg got this thread the lock
 	else {
@@ -78,7 +80,9 @@ static inline void mcs_hybrid_lock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnod
 
 static inline void mcs_hybrid_unlock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnode) {
 	// prevent load reordering, no load fence on xeon phi
-	//__sync_synchronize();
+	#ifndef __MIC__
+	__sync_synchronize();
+	#endif /* __MIC__ */
 
 	// release next locking thread
 	lock->turn++;
