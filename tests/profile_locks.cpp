@@ -17,7 +17,7 @@
 //#define PTHREAD
 
 #define LOOPS 10000
-#define DELAY_LOOP 10
+#define DELAY_LOOP 100
 #define THREADS 2
 
 using namespace std;
@@ -76,7 +76,7 @@ void *test_func_critical(void *arg){
 	return arg;
 }
 
-double launch_threads(void *(*fn)(void *)){
+double launch_threads(void *(*fn)(void *), int threads){
 	shared = 0;
 	double start = CycleTimer::currentSeconds();
 #ifdef PTHREAD
@@ -88,41 +88,46 @@ double launch_threads(void *(*fn)(void *)){
 		pthread_join(threads[i], NULL);
 	}
 #else
-	#pragma omp parallel for num_threads(THREADS)
-	for (int i=0; i<THREADS; i++){
+	#pragma omp parallel for num_threads(threads)
+	for (int i=0; i<threads*4; i++){
 		fn(NULL);
 	}
 
 #endif
-	if(shared != THREADS*LOOPS) {
+	if(shared != threads*LOOPS*4) {
 		printf("locking failed\n");
-		printf("observed:%d/%d\n", shared, THREADS*LOOPS);
+		printf("observed:%d/%d\n", shared, 4*threads*LOOPS);
 	}
 	return CycleTimer::currentSeconds() - start;
 }
 
+int threadcounts[] = {2, 4, 8, 12, 20, 30, 40, 50, 60};
 void run_testes(){
-	printf("==================================================\n");
-	printf("running tests with %d threads\n", THREADS);
-	double dt1, dt2, dt3, dt4, dt5;
-	printf("launched tts\n");
-	dt1 = launch_threads(test_func_tts);
-	dt1 = launch_threads(test_func_tts);
-	printf("launched ticket\n");
-	dt2 = launch_threads(test_func_ticketlock);
-	printf("launched mcs\n");
-	dt3 = launch_threads(test_func_mcslock);
-	printf("launched mcs hybrid\n");
-	dt4 = launch_threads(test_func_mcshybridlock);
-	printf("launched critical\n");
-	dt5 = launch_threads(test_func_critical);
-	printf("Total Elapsed: %.4fs, results:\n", (dt1 + dt2 + dt3 + dt4 + dt5));
-	printf("tts lock: %.4fs ", dt1);
-	printf("ticket lock: %.4f (%.4fs) ", dt2 / dt1, dt2);
-	printf("mcs lock: %.4f (%.4fs) ", dt3 / dt1, dt3);
-	printf("mcs hybrid lock: %.4f (%.4fs) ", dt4 / dt1, dt4);
-	printf("critical: %.4f (%.4fs)\n", dt5 / dt1, dt5);
-	printf("==================================================\n\n");
+	double start = CycleTimer::currentSeconds();
+	printf("Threads,tts,ticket,mcs,hybrid,critical\n");
+	for (int i=0; i<9; i++){
+		int threads = threadcounts[i];
+		//printf("running tests with %d threads\n", threads);
+		double dt1, dt2, dt3, dt4, dt5;
+		//printf("launched tts\n");
+		dt1 = launch_threads(test_func_tts, threads);
+		dt1 = launch_threads(test_func_tts, threads);
+		//printf("launched ticket\n");
+		dt2 = launch_threads(test_func_ticketlock, threads);
+		//printf("launched mcs\n");
+		dt3 = launch_threads(test_func_mcslock, threads);
+		//printf("launched mcs hybrid\n");
+		dt4 = launch_threads(test_func_mcshybridlock, threads);
+		//printf("launched critical\n");
+		dt5 = launch_threads(test_func_critical, threads);
+		printf("%d,", threads);
+		printf("%.4f,", dt1);
+		printf("%.4f,", dt2 / dt1);
+		printf("%.4f,", dt3 / dt1);
+		printf("%.4f,", dt4 / dt1);
+		printf("%.4f\n", dt5 / dt1);
+	}
+	printf("total runtime: %.4f\n", CycleTimer::currentSeconds() - start);
 }
 
 int main(int argc, char *argv[]){

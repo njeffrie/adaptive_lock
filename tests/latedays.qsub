@@ -1,9 +1,13 @@
 #!/bin/sh
 #PBS -l nodes=1:ppn=24
-#PBS -lwalltime=0:6:00
+#PBS -lwalltime=0:12:00
 #PBS -q phi
 execdir=/home/njeffrie/adaptive_lock/tests
-exe=lock_test
+exe=atomics_test
+#exe=profile_locks
+
+export MIC_ENV_PREFIX=PHI
+export PHI_KMP_AFFINITY=verbose,granularity=fine,scatter
 
 #cd $PBS_O_WORDIR
 #pbsdsh -u $PBS_O_WORKDIR/lock_test

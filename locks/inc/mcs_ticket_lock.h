@@ -10,6 +10,7 @@ typedef struct ticketlock {
 } ticketlock_t;
 
 #define INIT_TICKETLOCK (ticketlock_t){0, 0}
+//#define DELAY_FACTOR 256
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,10 +19,12 @@ extern "C" {
 static inline void ticket_lock(ticketlock_t *lock) {
 	// atomically fetch and increment ticket
 	uint64_t ticket = __sync_fetch_and_add(&lock->ticket, 1);
-	uint64_t i, cycles;
-	while ((cycles = ticket - lock->turn))
-		// proportional back-off
+	uint64_t i, cycles, backoff = 256;
+	while ((cycles = ticket - lock->turn)) {
+		// exponential back-off //proportional exponential back-off //linear back-off
 		busy_wait(cycles, i);
+		//backoff++;
+	}
 }
 
 static inline void ticket_unlock(ticketlock_t *lock) {

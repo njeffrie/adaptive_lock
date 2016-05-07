@@ -1,6 +1,6 @@
 #!/bin/bash
 
 #PBS -q phi
-rm latedays.qsub.*
+#rm latedays.qsub.*
 
 qsub latedays.qsub -n

@@ -4,7 +4,7 @@ LOCKDIR=$(ROOT)/locks
 TESTDIR=$(ROOT)/tests
 
 CXX=icc -m64 #-std=c++11
-CXXFLAGS=-I$(INC) -O3 -Wall -openmp -DRUN_MIC -offload-attribute-target=mic
+CXXFLAGS=-I$(INC) -O1 -Wall -openmp -DRUN_MIC -offload-attribute-target=mic
 
 #CPPFLAGS=-std=c++11 -fpic -m64 -O3 -Wall -openmp -offload-attribute-target=mic -DRUN_MIC
 #CFLAGS=-c -fpic -Wall -m64 -O3 -openmp -offload-attribute-target=mic -DRUN_MIC
@@ -17,15 +17,19 @@ CXXFLAGS=-I$(INC) -O3 -Wall -openmp -DRUN_MIC -offload-attribute-target=mic
 #$(TESTDIR)/lock_test.o\
 #$(TESTDIR)/rwlock_test.o
 
-TESTS=tests/lock_test# tests/rwlock_test
+TESTS=tests/profile_locks tests/lock_test tests/atomics_test
 #HEADERS=$(INC)/mcs_hybrid_lock.h $(INC)/mcs_queue_lock.h $(INC)/mcs_ticket_lock.h $(INC)/tts_lock.h
 #all: clean $(OBJS) $(TESTS)
+
+includes = $(wildcard $(INC)/*.h)
+
 all: $(TESTS)
+
 
 #%: $(OBJS)
 #	$(CXX) $(CXXFLAGS) -std=c++11 -o $@ $(OBJS)
 
-%: %.cpp
+%: %.cpp ${includes}
 	$(CXX) $(CXXFLAGS) -std=c++11 $(OBJS) $< -o $@
 
 %.o: %.cpp

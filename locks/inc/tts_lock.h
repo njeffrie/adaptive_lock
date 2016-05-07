@@ -17,10 +17,10 @@ inline void ttslock_init(ttslock_t *lock){
 	lock->locked = UNLOCKED;
 }
 
-inline void wait_cycles(int cycles){
+/*inline void wait_cycles(int cycles){
 	volatile int i;
 	for (i=0; i<cycles; i++);
-}
+}*/
 
 /* basic test and test and set lock with exponential backoff */
 inline void tts_lock(ttslock_t *lock){
