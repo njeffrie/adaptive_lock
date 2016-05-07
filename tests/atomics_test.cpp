@@ -81,40 +81,33 @@ void run_testes(){
 	printf("cmpxchg_failure: %.4f (%.4fs) ", dt4 / dt1, dt4);
 }
 
+double run_memory_profile(bool writer){
+	double start = CycleTimer::currentSeconds();
+	if (writer){
+		#pragma omp parallel for num_threads(THREADS)
+		for (int i=0; i<THREADS*100; i++){
+			test_invalidations(i);
+		}
+	}
+	else {
+		#pragma omp parallel for num_threads(THREADS)
+		for (int i=0; i<THREADS*100; i++){
+			test_readers();
+		}
+	}
+	return CycleTimer::currentSeconds() - start;
+}
+
 int main(int argc, char *argv[]){
 	#pragma offload target(mic)
 	{
-			
-		#pragma omp parallel for num_threads(THREADS)
-		for (int i=0; i<THREADS*100; i++){
-			test_readers();
-		}
-		double start = CycleTimer::currentSeconds();
-		#pragma omp parallel for num_threads(THREADS)
-		for (int i=0; i<THREADS*100; i++){
-			test_readers();
-		}
-		double dt1 = CycleTimer::currentSeconds() - start;
-		start = CycleTimer::currentSeconds();
-		#pragma omp parallel for num_threads(THREADS)
-		for (int i=0; i<THREADS*100; i++){
-			test_invalidations(i);
-		}
-		double dt2 = CycleTimer::currentSeconds() - start;
-		start = CycleTimer::currentSeconds();
-		#pragma omp parallel for num_threads(THREADS)
-		for (int i=0; i<THREADS*100; i++){
-			test_invalidations(i);
-		}
-		dt2 += CycleTimer::currentSeconds() - start;
-		start = CycleTimer::currentSeconds();
-		#pragma omp parallel for num_threads(THREADS)
-		for (int i=0; i<THREADS*100; i++){
-			test_readers();
-		}
-		dt1 += CycleTimer::currentSeconds() - start;
-		printf("invalidations are %fx slower than reads with %d threads\n", dt2/dt1, THREADS);	
-		printf("total time:%f\n", dt1 + dt2);
+		run_memory_profile(0);
+		double read = run_memory_profile(false);
+		double write = run_memory_profile(true);
+		read += run_memory_profile(false);
+		write += run_memory_profile(true);
+		printf("invalidations are %fx slower than reads with %d threads\n", write/read, THREADS);	
+		printf("total time:%f\n", read + write);
 		//yes... testes.
 		//run_testes();
 	}

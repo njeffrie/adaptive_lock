@@ -16,14 +16,15 @@ typedef struct ticketlock {
 extern "C" {
 #endif
 
+#define BACKOFF_CONST 256
+
 static inline void ticket_lock(ticketlock_t *lock) {
 	// atomically fetch and increment ticket
 	uint64_t ticket = __sync_fetch_and_add(&lock->ticket, 1);
-	uint64_t i, cycles, backoff = 256;
+	uint64_t i, cycles;
 	while ((cycles = ticket - lock->turn)) {
-		// exponential back-off //proportional exponential back-off //linear back-off
-		busy_wait(cycles, i);
-		//backoff++;
+		// proportional back-off
+		busy_wait(cycles*BACKOFF_CONST, i);
 	}
 }
 

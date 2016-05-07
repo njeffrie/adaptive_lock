@@ -18,11 +18,12 @@
 
 #define LOOPS 10000
 #define DELAY_LOOP 10
-#define THREADS 2
+#define THREADS 10
 
 using namespace std;
 
 int shared;
+int first_access[THREADS] = {-1};
 
 ticketlock_t l = INIT_TICKETLOCK;
 mcs_lock_t mcs = INIT_MCS_LOCK;
@@ -40,24 +41,24 @@ inline void delay(int cycles){
 	shared = var + 1\
 
 #define TEST_SETUP(fname, local_t, lock, unlock, l)\
-void *fname(void *args){\
+void fname(int threadId){\
 	for (int i=0; i<LOOPS; i++){\
 		local_t loc;\
 		lock(&l, &loc);\
+		if (first_access[threadId] == -1) first_access[threadId] = shared;\
 		TEST_INTERNAL;\
 		unlock(&l, &loc);\
 	}\
-	return args;\
 }
 
 #define TEST_NOSETUP(fname, lock, unlock, l)\
-void *fname(void *args){\
+void fname(int threadId){\
 	for (int i=0; i<LOOPS; i++){\
 		lock(&l);\
+		if (first_access[threadId] == -1) first_access[threadId] = shared;\
 		TEST_INTERNAL;\
 		unlock(&l);\
 	}\
-	return args;\
 }
 
 TEST_NOSETUP(test_func_tts, tts_lock, tts_unlock, tts)
@@ -66,45 +67,50 @@ TEST_SETUP(test_func_mcslock, lock_qnode_t, mcs_lock, mcs_unlock, mcs)
 TEST_SETUP(test_func_mcshybridlock, hybrid_qnode_t, mcs_hybrid_lock, mcs_hybrid_unlock, mcshybrid);
 
 //uses omp critical
-void *test_func_critical(void *arg){
+void test_func_critical(int threadId){
 	for (int i=0; i<LOOPS; i++){
 		#pragma omp critical 
 		{
+			if (first_access[threadId] == -1) first_access[threadId] = shared;\
 			TEST_INTERNAL;
 		}
 	}
-	return arg;
 }
 
-double launch_threads(void *(*fn)(void *)){
+void print_first_accesses(){
+	printf("first accesses: [");
+	for (int i=0; i<THREADS; i++){
+		printf("%d ", first_access[i]);
+	}
+	printf("]\n");
+	for (int i=0; i<THREADS; i++){
+		first_access[i] = -1;
+	}
+}
+
+double launch_threads(void (*fn)(int)){
 	shared = 0;
 	double start = CycleTimer::currentSeconds();
-#ifdef PTHREAD
-	pthread_t threads[THREADS];
-	for (int i=0; i<THREADS; i++){
-		pthread_create(&threads[i], NULL, fn, NULL);
-	}
-	for (int i=0; i<THREADS; i++){
-		pthread_join(threads[i], NULL);
-	}
-#else
 	#pragma omp parallel for num_threads(THREADS)
 	for (int i=0; i<THREADS; i++){
-		fn(NULL);
+		fn(i);
 	}
+	double dt = CycleTimer::currentSeconds() - start;
 
-#endif
 	if(shared != THREADS*LOOPS) {
 		printf("locking failed\n");
 		printf("observed:%d/%d\n", shared, THREADS*LOOPS);
 	}
-	return CycleTimer::currentSeconds() - start;
+	print_first_accesses();
+	return dt;
 }
 
+int threadcounts[] = {2, 4, 8, 12, 20, 30, 40, 50, 60};
 void run_testes(){
 	printf("==================================================\n");
 	printf("running tests with %d threads\n", THREADS);
 	double dt1, dt2, dt3, dt4, dt5;
+	print_first_accesses();
 	printf("launched tts\n");
 	dt1 = launch_threads(test_func_tts);
 	dt1 = launch_threads(test_func_tts);

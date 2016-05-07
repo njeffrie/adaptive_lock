@@ -16,9 +16,9 @@
 
 //#define PTHREAD
 
-#define LOOPS 10000
-#define DELAY_LOOP 100
-#define THREADS 2
+#define LOOPS 1000
+#define DELAY_LOOP 0
+#define THREADS 59
 
 using namespace std;
 
@@ -35,9 +35,12 @@ inline void delay(int cycles){
 }
 
 #define TEST_INTERNAL\
-	int var = shared;\
-	delay(DELAY_LOOP);\
-	shared = var + 1\
+	do { \
+		int var = shared;\
+		/*delay(DELAY_LOOP);*/int i;\
+		busy_wait(DELAY_LOOP, i);\
+		shared = var + 1;\
+	} while (0)
 
 #define TEST_SETUP(fname, local_t, lock, unlock, l)\
 void *fname(void *args){\
@@ -46,6 +49,8 @@ void *fname(void *args){\
 		lock(&l, &loc);\
 		TEST_INTERNAL;\
 		unlock(&l, &loc);\
+		int j;\
+		busy_wait(DELAY_LOOP, j);\
 	}\
 	return args;\
 }
@@ -79,33 +84,24 @@ void *test_func_critical(void *arg){
 double launch_threads(void *(*fn)(void *), int threads){
 	shared = 0;
 	double start = CycleTimer::currentSeconds();
-#ifdef PTHREAD
-	pthread_t threads[THREADS];
-	for (int i=0; i<THREADS; i++){
-		pthread_create(&threads[i], NULL, fn, NULL);
-	}
-	for (int i=0; i<THREADS; i++){
-		pthread_join(threads[i], NULL);
-	}
-#else
 	#pragma omp parallel for num_threads(threads)
 	for (int i=0; i<threads*4; i++){
 		fn(NULL);
 	}
+	double dt = CycleTimer::currentSeconds() - start;
 
-#endif
 	if(shared != threads*LOOPS*4) {
 		printf("locking failed\n");
 		printf("observed:%d/%d\n", shared, 4*threads*LOOPS);
 	}
-	return CycleTimer::currentSeconds() - start;
+	return dt;
 }
 
-int threadcounts[] = {2, 4, 8, 12, 20, 30, 40, 50, 60};
+int threadcounts[] = {1, 2, 4, 8, 16, 32, 48, 59};
 void run_testes(){
 	double start = CycleTimer::currentSeconds();
-	printf("Threads,tts,ticket,mcs,hybrid,critical\n");
-	for (int i=0; i<9; i++){
+	printf("Threads\ttts\t\t\tticket\tmcs\t\t\thybrid\t(all relative to critical)\n");
+	for (int i=0; i<sizeof(threadcounts)/sizeof(int); i++){
 		int threads = threadcounts[i];
 		//printf("running tests with %d threads\n", threads);
 		double dt1, dt2, dt3, dt4, dt5;
@@ -120,12 +116,11 @@ void run_testes(){
 		dt4 = launch_threads(test_func_mcshybridlock, threads);
 		//printf("launched critical\n");
 		dt5 = launch_threads(test_func_critical, threads);
-		printf("%d,", threads);
-		printf("%.4f,", dt1);
-		printf("%.4f,", dt2 / dt1);
-		printf("%.4f,", dt3 / dt1);
-		printf("%.4f,", dt4 / dt1);
-		printf("%.4f\n", dt5 / dt1);
+		printf("%4d\t\t", threads);
+		printf("%1.3f\t\t", dt1 / dt5);
+		printf("%1.3f\t\t", dt2 / dt5);
+		printf("%1.3f\t\t", dt3 / dt5);
+		printf("%1.3f\n", dt4 / dt5);
 	}
 	printf("total runtime: %.4f\n", CycleTimer::currentSeconds() - start);
 }

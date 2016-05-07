@@ -4,8 +4,9 @@
 #PBS -q phi
 
 execdir=/home/njeffrie/adaptive_lock/tests
-exe=atomics_test
-#exe=profile_locks
+#exe=lock_test
+#exe=atomics_test
+exe=profile_locks
 
 export MIC_ENV_PREFIX=PHI
 export PHI_KMP_AFFINITY=verbose,granularity=fine,scatter
