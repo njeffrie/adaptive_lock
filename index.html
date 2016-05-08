@@ -108,19 +108,20 @@ We have produced several locks based on the <a href=http://www.cs.rochester.edu/
 Additionally, we found that maintaining a perfectly fair lock can be costly when compared to unfair implementations such as the test and test and set lock, when running on micro-benchmarks where fairness is not required.  We assert that the cost of maintaining fairness is worthwhile, and that all three of our fair locks present a large improvement over the OpenMP critial construct.
 </p>
 
-<p> Below, we present some preliminary results comparing the performance of the locks we have implemented to OpenMP critical under various levels of contention. </p>
+<p> Below, we present raw performance values for the various types of locks between 1 and 59 threads. Observe that the scaling of our hybrid lock follows the mcs scaling as the contention increases.
+</p>
+<img src="images/raw_perf.png">
 
-<img src="images/image.png">
+<p> Below, we present performance normalized to number of threads in order to demonstrate the scaling of each lock type.  Notice that the hybrid lock follows the mcs lock for high contention, and follows the ticket lock for low contention, representing a good choice across a varying workload.
+</p>
+<img src="images/adjusted_perf.png">
+
 <p> Below, we present some results comparing the fairness of locks across 10 threads, indicated by the number of iterations the last thread must wait before obtaining the lock for the first time.  Lower numbers indicate a fairer lock.
 </p>
 <img src="images/fairness.png">
 
-<p> Below, we present raw performance values for the various types of locks between 1 and 59 threads. Observe that the scaling of our hybrid lock follows the mcs scaling as the contention increases.
-</p>
-<img src="images/raw_perf.png">
-<p> Below, we present performance normalized to number of threads in order to demonstrate the scaling of each lock type.  Notice that the hybrid lock follows the mcs lock for high contention, and follows the ticket lock for low contention, representing a good choice across a varying workload.
-</p>
-<img src="images/adjusted_perf.png">
+<p> Below, we present the speedup of the fair locks we have implemented relative to OpenMP critical.</p>
+<img src="images/speed_over_critical.png">
 
 </section>
     </div>
