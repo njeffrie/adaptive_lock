@@ -93,7 +93,7 @@ Week of 5/2 - Finalize implementaiton, experiment changing architecture if time 
 5/9- Parallelism Competition</p>
 
 <h3>
-<a id="project-checkpoint" class="anchor" href="#project-checkpoint" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Project Checkpoint</h3>
+<a id="project-checkpoint" class="anchor" href="#project-checkpoint" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Progress</h3>
 
 <p> We have implemented and verified multiple spinlock implementations for the xeon phi: test-and-test-and-set lock with exponential back-off (TTS), ticket-lock with proportional back-off (ticket), and MCS local-spinning queue-lock (MCS). We have profiled the performance of these locks on the xeon phi while varying the level of contention. Between the two fair locks (MCS and ticket), MCS provides scaling linear to the processor count while ticket observes lower latency under lower contention. In addition to very low latency, the TTS lock shows by far the best performance, however this is primarly due to the unbounded unfairness of the TTS lock allowing it to abuse our artificial workload. </p>
 
@@ -102,7 +102,7 @@ Week of 5/2 - Finalize implementaiton, experiment changing architecture if time 
 <h3>
 <a id="results" class="anchor" href="#results" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Results</h3>
 <p>
-We have produced several locks based on the <a href=http://www.cs.rochester.edu/~scott/papers/1991_TOCS_synch.pdf>paper by Michael Scott and John Mellor-Crummey</a>.  We have implemented implemented an mcs ticket lock, mcs local-spinning list based lock, test and test and set lock (tts), and our own hybrid lock implemention which combines the fairness and benefits of ticket locks under low contention, and the avoidance of cross-core cache invalidations by spinning on stack variables as found in the mcs list based lock.  We demonstrate that our lock performs better under low contention then a the mcs list spinlock, and better under high contention than the mcs ticket lock.
+We have produced several locks based on the <a href=http://www.cs.rochester.edu/~scott/papers/1991_TOCS_synch.pdf>paper by Michael Scott and John Mellor-Crummey</a>. We have implemented an mcs ticket lock, mcs local-spinning list based lock, test and test and set lock (tts), and our own hybrid lock implemention, which combines the low latency of ticket locks under low contention and the local spinning (avoiding cache invalidations) of the mcs list based lock under high contention.  We demonstrate that our lock performs better under low contention then a the mcs list spinlock, and better under high contention than the mcs ticket lock.
 </p>
 <p>
 Additionally, we found that maintaining a perfectly fair lock can be costly when compared to unfair implementations such as the test and test and set lock, when running on micro-benchmarks where fairness is not required.  We assert that the cost of maintaining fairness is worthwhile, and that all three of our fair locks present a large improvement over the OpenMP critial construct.
