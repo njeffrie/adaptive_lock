@@ -16,8 +16,8 @@
 
 //#define PTHREAD
 
-#define LOOPS 1000
-#define DELAY_LOOP 0
+#define LOOPS 10000
+#define DELAY_LOOP 10
 #define THREADS 59
 
 using namespace std;
@@ -97,12 +97,19 @@ double launch_threads(void *(*fn)(void *), int threads){
 	return dt;
 }
 
-int threadcounts[] = {1, 2, 4, 8, 16, 32, 48, 59};
+#define CSV
+int threadcounts[] = {1, 2, 4, 8, 16, 32, 48, 59, 64, 128, 192, 236};
 void run_testes(){
 	double start = CycleTimer::currentSeconds();
-	printf("Threads\ttts\t\t\tticket\tmcs\t\t\thybrid\t(all relative to critical)\n");
-	for (int i=0; i<sizeof(threadcounts)/sizeof(int); i++){
-		int threads = threadcounts[i];
+#ifdef CSV
+	printf("Threads,tts,ticket,mcs,hybrid,critical\n");
+#else
+	printf("Threads\ttts\t\t\tticket\tmcs\t\t\thybrid\t\tcritical\n");
+#endif
+	//for (int i=0; i<sizeof(threadcounts)/sizeof(int); i++){
+	int offset = 1;
+	for (int threads = 1; threads < 60; threads += offset){
+	//int threads = threadcounts[i];
 		//printf("running tests with %d threads\n", threads);
 		double dt1, dt2, dt3, dt4, dt5;
 		//printf("launched tts\n");
@@ -116,6 +123,12 @@ void run_testes(){
 		dt4 = launch_threads(test_func_mcshybridlock, threads);
 		//printf("launched critical\n");
 		dt5 = launch_threads(test_func_critical, threads);
+#ifdef CSV
+		printf("%4d,%2.3f,%2.3f,%2.3f,%2.3f,%2.3f\n", threads, dt1, dt2, dt3, dt4, dt5);
+		if (threads / 4 == offset * offset)
+				offset *= 2;
+}
+#else
 		printf("%4d\t\t", threads);
 		printf("%1.3f\t\t", dt1 / dt5);
 		printf("%1.3f\t\t", dt2 / dt5);
@@ -123,6 +136,7 @@ void run_testes(){
 		printf("%1.3f\n", dt4 / dt5);
 	}
 	printf("total runtime: %.4f\n", CycleTimer::currentSeconds() - start);
+#endif
 }
 
 int main(int argc, char *argv[]){
