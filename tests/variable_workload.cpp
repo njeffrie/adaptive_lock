@@ -37,32 +37,32 @@ inline void delay(int cycles){
 #define TEST_INTERNAL\
 	do { \
 		int var = shared;\
-		/*delay(DELAY_LOOP);*/int i;\
-		busy_wait(DELAY_LOOP, i);\
+		busy_wait(DELAY_LOOP, j);\
 		shared = var + 1;\
 	} while (0)
 
 #define TEST_SETUP(fname, local_t, lock, unlock, l)\
-void *fname(void *args){\
+void fname(int cont){\
+	int j;\
 	for (int i=0; i<LOOPS; i++){\
 		local_t loc;\
 		lock(&l, &loc);\
 		TEST_INTERNAL;\
 		unlock(&l, &loc);\
 		int j;\
-		busy_wait(DELAY_LOOP, j);\
+		busy_wait(cont, j);\
 	}\
-	return args;\
 }
 
 #define TEST_NOSETUP(fname, lock, unlock, l)\
-void *fname(void *args){\
+void fname(int cont){\
+	int j;\
 	for (int i=0; i<LOOPS; i++){\
 		lock(&l);\
 		TEST_INTERNAL;\
 		unlock(&l);\
+		busy_wait(cont, j);\
 	}\
-	return args;\
 }
 
 TEST_NOSETUP(test_func_tts, tts_lock, tts_unlock, tts)
@@ -71,22 +71,24 @@ TEST_SETUP(test_func_mcslock, lock_qnode_t, mcs_lock, mcs_unlock, mcs)
 TEST_SETUP(test_func_mcshybridlock, hybrid_qnode_t, mcs_hybrid_lock, mcs_hybrid_unlock, mcshybrid);
 
 //uses omp critical
-void *test_func_critical(void *arg){
+void test_func_critical(int cont){
+	int j;
 	for (int i=0; i<LOOPS; i++){
 		#pragma omp critical 
 		{
 			TEST_INTERNAL;
 		}
+		busy_wait(cont, j);\
 	}
-	return arg;
 }
 
-double launch_threads(void *(*fn)(void *), int threads){
+double launch_threads(void (*fn)(int), int threads){
 	shared = 0;
 	double start = CycleTimer::currentSeconds();
+	int cont = 10;
 	#pragma omp parallel for num_threads(threads)
 	for (int i=0; i<threads*4; i++){
-		fn(NULL);
+		fn(cont);
 	}
 	double dt = CycleTimer::currentSeconds() - start;
 
@@ -97,7 +99,7 @@ double launch_threads(void *(*fn)(void *), int threads){
 	return dt;
 }
 
-#define CSV
+//#define CSV
 int threadcounts[] = {1, 2, 4, 8, 16, 32, 48, 59, 64, 128, 192, 236};
 void run_testes(){
 	double start = CycleTimer::currentSeconds();

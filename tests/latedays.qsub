@@ -6,11 +6,18 @@
 execdir=/home/njeffrie/adaptive_lock/tests
 #exe=lock_test
 #exe=atomics_test
-exe=profile_locks
+#exe=profile_locks
+exe=variable_workload
 
 export MIC_ENV_PREFIX=PHI
 export PHI_KMP_AFFINITY=verbose,granularity=fine,scatter
 export PHI_KMP_PLACE_THREADS=59c,4t
 
-cp ${execdir}/${exe} ${exe}
-./${exe}
+#cp ${execdir}/${exe} ${exe}
+#./${exe}
+
+parsecdir=/home/njeffrie/adaptive_lock/parsec-3.0
+cd ${parsecdir}
+source ${parsecdir}/env.sh
+
+parsecmgmt -a run -p fluidanimate -i simlarge -n 32

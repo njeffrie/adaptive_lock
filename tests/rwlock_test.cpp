@@ -4,14 +4,13 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <iostream>
-#include <mcs_queue_lock.h>
 #include <mcs_queue_rwlock.h>
-#include <mcs_ticket_lock.h>
 #include <mcs_ticket_rwlock.h>
 #include <assert.h>
 #include <time.h>
-#include "CycleTimer.h"
+#include <CycleTimer.h>
 #include <omp.h>
+#include <mic_xeon_phi.h>
 
 #define LOOPS 1000
 #define READ_LOOPS 10

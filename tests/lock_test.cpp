@@ -11,7 +11,7 @@
 #include <tts_lock.h>
 #include <assert.h>
 #include <time.h>
-#include "CycleTimer.h"
+#include <CycleTimer.h>
 #include <omp.h>
 
 //#define PTHREAD

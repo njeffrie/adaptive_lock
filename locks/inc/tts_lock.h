@@ -13,7 +13,7 @@ typedef struct ttslock {
 #define LOCKED 1
 #define UNLOCKED 0
 
-inline void ttslock_init(ttslock_t *lock){
+static inline void ttslock_init(ttslock_t *lock){
 	lock->locked = UNLOCKED;
 }
 
@@ -23,7 +23,7 @@ inline void ttslock_init(ttslock_t *lock){
 }*/
 
 /* basic test and test and set lock with exponential backoff */
-inline void tts_lock(ttslock_t *lock){
+static inline void tts_lock(ttslock_t *lock){
 	uint64_t back_off = 1;
 	do {
 		while (lock->locked) {
@@ -34,7 +34,7 @@ inline void tts_lock(ttslock_t *lock){
 	} while (__sync_lock_test_and_set(&lock->locked, LOCKED));
 }
 
-inline void tts_unlock(ttslock_t *lock){
+static inline void tts_unlock(ttslock_t *lock){
 	__sync_synchronize();
 	lock->locked = UNLOCKED;
 }
