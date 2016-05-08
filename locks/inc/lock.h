@@ -7,12 +7,12 @@
 #include <mcs_hybrid_lock.h>
 
 #define LOCK_TYPE mcs_hybrid_lock_t
-#define LOCK_INIT INIT_HYBRID_LOCK
+#define LOCK_INIT_VAL INIT_HYBRID_LOCK
 #define LOCK_PRE mcs_hybrid_
 #define QNODE_TYPE hybrid_qnode_t
 
 #define LOCK_DEF(lock) LOCK_TYPE lock
-#define LOCK_INIT(lock) lock = LOCK_INIT
+#define LOCK_INIT(lock) lock = LOCK_INIT_VAL
 
 #ifdef LOCK_QNODE
 
@@ -34,6 +34,16 @@
 		LOCK_PRE ## unlock(lock); \
 	} while (0)
 
-#define 
+#endif 
+
+#define ALOCK_DEF(lock, num_locks) LOCK_TYPE lock[num_locks]
+#define ALOCK_INIT(lock, num_locks) \
+	do { \
+		int i; \
+		for (i = 0; i < (num_locks); i++) \
+			(lock)[i] = LOCK_INIT_VAL; \
+	} while (0)
+#define ALOCK_LOCK(lock, idx, qnode) LOCK_LOCK(lock + idx, qnode)
+#define ALOCK_UNLOCK(lock, idx, qnode) LOCK_UNLOCK(lock + idx, qnode)
 
 #endif /* LOCK_H */
