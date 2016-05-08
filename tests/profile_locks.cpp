@@ -97,7 +97,7 @@ double launch_threads(void *(*fn)(void *), int threads){
 	return dt;
 }
 
-int threadcounts[] = {1, 2, 4, 8, 16, 32, 48, 59};
+int threadcounts[] = {1, 2, 4, 8, 16, 32, 48, 59, 64, 128, 192, 236};
 void run_testes(){
 	double start = CycleTimer::currentSeconds();
 	printf("Threads\ttts\t\t\tticket\tmcs\t\t\thybrid\t(all relative to critical)\n");
