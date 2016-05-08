@@ -36,6 +36,7 @@ typedef struct mcs_hybrid_lock {
 
 // threshold for transition between ticketlock and queuelock
 #define THRESH 4L
+#define BACKOFF_FACTOR 64
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,7 +69,7 @@ static inline void mcs_hybrid_lock(mcs_hybrid_lock_t *lock, hybrid_qnode_t *qnod
 			uint64_t cycles;
 			while ((cycles = qnode->ticket - lock->turn)) 
 				// proportional back-off
-				busy_wait(cycles, i);
+				busy_wait(BACKOFF_FACTOR * cycles, i);
 		}
 	}
 	// if prev is NULL, xchg got this thread the lock
