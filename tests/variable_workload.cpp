@@ -101,7 +101,7 @@ double launch_threads(void (*fn)(int), int threads, int cont){
 #define MIN 800
 #define MAX 1600
 //#define CSV
-int threadcounts[] = {1, 2, 4, 8, 16, 32, 48, 59, 64, 128, 192, 236};
+int threadcounts[] = {2, 4, 8, 16, 24, 32};
 void run_testes(){
 	double start = CycleTimer::currentSeconds();
 #ifdef CSV
@@ -109,12 +109,13 @@ void run_testes(){
 #else
 	printf("Threads\ttts\t\t\tticket\tmcs\t\t\thybrid\t\tcritical\n");
 #endif
-	//for (int i=0; i<sizeof(threadcounts)/sizeof(int); i++){
 	int offset = 1;
 	int cont = 10;
-	int threads = 4;
-	for (int threads = 3; threads < 7; threads++){
-	//int threads = threadcounts[i];
+	//int threads = 4;
+	for (int i=0; i<sizeof(threadcounts)/sizeof(int); i++){
+	//for (int threads = 2; threads < 60; threads+= 4){
+		
+		int threads = threadcounts[i];
 		//printf("running tests with %d threads\n", threads);
 		double dt1=0;
 		double dt2=0;
@@ -124,7 +125,7 @@ void run_testes(){
 		
 		launch_threads(test_func_tts, threads, cont);
 		int dc=200;
-		for (int i=0; i<50; i++){
+		for (int i=0; i<20; i++){
 			for (cont=MIN; cont<=MAX && cont >= MIN; cont+=dc){
 				//printf("launched tts\n");
 				dt1 += launch_threads(test_func_tts, threads, cont);
