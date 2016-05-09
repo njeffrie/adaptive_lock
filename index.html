@@ -126,6 +126,10 @@ Additionally, we found that maintaining a perfectly fair lock can be costly when
 <p> Below, we present the performance of our hybrid lock under varying contention across several core counts, demonstrating that the hybrid nature of our lock could perform better on some real world workloads.
 </p>
 <img src="images/variable_perf.png">
+
+<p> Below, we present the performance over a broader range of cores, indicating that our lock, while it may work on some workloads, is often outperformed by simpler locking methods</p>
+<img src="images/variable_contention_wide.png">
+
 </section>
     </div>
 
